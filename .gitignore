@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/public/decoders/
+
+# Terrain build cache (raw downloaded tiles)
+tools/terrain/.cache/
+tools/.venv/
+
+# Env & logs
+.env
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
