@@ -4,13 +4,13 @@ import { useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AdditiveBlending, Color, MathUtils, type Group, type Mesh, type MeshBasicMaterial } from 'three'
 import { useCategories } from '../../api/hooks'
-import type { LandmarkSummary } from '../../api/types'
+import type { LandmarkMapItem } from '../../api/types'
 import { sampleHeight, type TerrainData } from '../../lib/geo'
 import { useAppStore } from '../../store/useAppStore'
 
 const GOLD = '#f2c46b'
 
-export function Markers({ landmarks, terrain }: { landmarks: LandmarkSummary[]; terrain: TerrainData }) {
+export function Markers({ landmarks, terrain }: { landmarks: LandmarkMapItem[]; terrain: TerrainData }) {
   const { data: categories } = useCategories()
   const colors = useMemo(() => Object.fromEntries((categories ?? []).map((c) => [c.slug, c.color])), [categories])
   return (
@@ -34,7 +34,7 @@ function Marker({
   color,
   groundY,
 }: {
-  landmark: LandmarkSummary
+  landmark: LandmarkMapItem
   index: number
   color: string
   groundY: number

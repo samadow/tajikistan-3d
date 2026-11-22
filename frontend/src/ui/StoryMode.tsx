@@ -75,7 +75,6 @@ export function StoryMode() {
               <h2 className="mt-3 font-display text-4xl font-medium leading-tight md:text-5xl">{lm.name}</h2>
               {lm.subtitle && <p className="mt-2 font-display text-lg italic text-gold-300/90">{lm.subtitle}</p>}
               <div className="ornament-band my-5 w-32" />
-              {lm.short_description && <p className="text-sm leading-relaxed text-parchment/85">{lm.short_description}</p>}
               <p className="mt-4 text-xs tracking-widest text-mist">
                 {lm.elevation_m.toLocaleString('ru-RU')} {t('m')}
               </p>

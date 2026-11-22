@@ -168,10 +168,10 @@ function Panel({ landmark, webgl }: { landmark: LandmarkDetail; webgl: boolean }
         </section>
 
         <footer className="mt-10 space-y-1 border-t hairline pt-4 text-[0.7rem] text-mist/70">
-          {webgl && !landmark.model_url && <p>{t('placeholderModel')}</p>}
-          {landmark.model_credit && (
+          {webgl && !landmark.models.length && <p>{t('placeholderModel')}</p>}
+          {landmark.models[0]?.credit && (
             <p>
-              {t('modelCredit')}: {landmark.model_credit}
+              {t('modelCredit')}: {landmark.models[0].credit}
             </p>
           )}
           {landmark.poster_credit && <p>© {landmark.poster_credit}</p>}

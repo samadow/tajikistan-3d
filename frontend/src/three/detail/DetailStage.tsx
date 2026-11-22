@@ -3,9 +3,10 @@ import { useThree } from '@react-three/fiber'
 import { Component, Suspense, useEffect, useMemo, type ReactNode } from 'react'
 import { Box3, Vector3, type Object3D } from 'three'
 import { KTX2Loader } from 'three-stdlib'
-import { useLandmark, useLandmarks } from '../../api/hooks'
+import { useLandmark } from '../../api/hooks'
 import type { Hotspot, LandmarkDetail } from '../../api/types'
 import { disposeObject } from '../../lib/dispose'
+import { pickModel } from '../../lib/models'
 import { useAppStore } from '../../store/useAppStore'
 import { PlaceholderModel, Plinth } from './Placeholders'
 
@@ -105,7 +106,8 @@ function Hotspots({ hotspots }: { hotspots: Hotspot[] }) {
 function Stage({ landmark }: { landmark: LandmarkDetail }) {
   const eraIndex = useAppStore((s) => s.eraIndex)
   const era = landmark.eras[eraIndex]
-  const url = era?.model_url ?? landmark.model_url
+  const quality = useAppStore((s) => s.quality)
+  const url = pickModel(era?.models.length ? era.models : landmark.models, quality)?.url ?? null
   const variant = era?.placeholder_variant
   const placeholder = <PlaceholderModel key={`${landmark.slug}-${variant}`} kind={landmark.placeholder} variant={variant} />
 
@@ -136,18 +138,6 @@ function LoadingRing() {
   )
 }
 
-/** Preloads the next landmark's GLB so "next" feels instant. */
-function PreloadNext({ slug }: { slug: string }) {
-  const { data } = useLandmarks()
-  useEffect(() => {
-    if (!data) return
-    const i = data.findIndex((l) => l.slug === slug)
-    const next = data[(i + 1) % data.length]
-    if (next?.model_url) useGLTF.preload(next.model_url, DRACO_PATH, true)
-  }, [data, slug])
-  return null
-}
-
 /** The landmark's own scene: studio lighting, plinth, model and hotspots. */
 export function DetailStage({ quality }: { quality: 'high' | 'medium' | 'low' }) {
   const slug = useAppStore((s) => s.selectedSlug)
@@ -164,7 +154,6 @@ export function DetailStage({ quality }: { quality: 'high' | 'medium' | 'low' })
       </Environment>
       <Stage landmark={landmark} />
       {quality !== 'low' && <ContactShadows position={[0, 0.01, 0]} scale={9} blur={2.4} far={4} opacity={0.65} resolution={512} color="#000814" />}
-      <PreloadNext slug={landmark.slug} />
     </group>
   )
 }

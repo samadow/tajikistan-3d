@@ -18,12 +18,15 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     env_file: .env
     environment:
       POSTGRES_HOST: db
       DJANGO_MEDIA_ROOT: /app/media
+      TRUSTED_PROXIES: "1"   # nginx
     volumes:
       - media:/app/media
     depends_on:

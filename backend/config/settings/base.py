@@ -31,7 +31,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "corsheaders",
-    "landmarks",
+    "drf_spectacular",
+    "apps.core",
+    "apps.landmarks",
+    "apps.stories",
 ]
 
 MIDDLEWARE = [
@@ -129,7 +132,42 @@ REST_FRAMEWORK = {
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.AnonRateThrottle"],
     "DEFAULT_THROTTLE_RATES": {"anon": "600/minute"},
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "UNAUTHENTICATED_USER": None,
+    # Number of trusted reverse proxies in front of Django (nginx = 1). Without it DRF would
+    # build the throttle identity from the client-controlled X-Forwarded-For header.
+    "NUM_PROXIES": int(env("TRUSTED_PROXIES", "0")),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Tajikistan 3D API",
+    "DESCRIPTION": "Read-only public API for the Tajikistan 3D experience. "
+    "Every endpoint accepts ?lang=tg|ru|en (or Accept-Language).",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+}
+
+# --- Cache -----------------------------------------------------------------
+# API responses are cached per language and invalidated instantly on content
+# changes (apps/core/cache.py). Production uses a file cache shared by all
+# gunicorn workers in the container; override with CACHE_BACKEND/CACHE_LOCATION.
+API_CACHE_SECONDS = int(env("API_CACHE_SECONDS", "60"))
+CACHES = {
+    "default": {
+        "BACKEND": env("CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),
+        "LOCATION": env("CACHE_LOCATION", "tajikistan3d"),
+        "TIMEOUT": 300,
+    }
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"plain": {"format": "%(asctime)s %(levelname)s %(name)s: %(message)s"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    "root": {"handlers": ["console"], "level": env("LOG_LEVEL", "INFO")},
+    "loggers": {"django.request": {"handlers": ["console"], "level": "WARNING", "propagate": False}},
 }
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")

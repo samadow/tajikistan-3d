@@ -18,3 +18,8 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_CLASSES": [],
 }
+
+# WhiteNoise serves collected static files in production only.
+from .base import MIDDLEWARE  # noqa: E402
+
+MIDDLEWARE = [m for m in MIDDLEWARE if "whitenoise" not in m]

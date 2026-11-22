@@ -17,7 +17,7 @@ Phase 1 adds `npm test` (Vitest) and Phase 3 adds `npm run e2e` (Playwright).
 - [x] Inspected the repository; ran tests, typecheck and build.
 - [x] Wrote TECHNICAL_AUDIT.md, ARCHITECTURE.md and this plan.
 
-## Phase 1: Backend foundation
+## Phase 1: Backend foundation ✅
 **Goal:** a CMS and API that cover the whole content model, with versioned and documented endpoints.
 
 | Task | Files |

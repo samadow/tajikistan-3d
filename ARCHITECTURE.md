@@ -88,7 +88,7 @@ backend/
 | `GET /api/v1/landmarks/map/` | Map markers | Light: slug, name, subtitle, category, lat/lon, position, camera. Unpaginated; bounded by the number of published landmarks. |
 | `GET /api/v1/landmarks/` | Discover catalogue and search (`?search=`, `?category=`, `?featured=`) | Paginated cards |
 | `GET /api/v1/landmarks/featured/` | Home highlights | Cards |
-| `GET /api/v1/landmarks/nearby/?lat=&lon=&radius_km=` | "Nearby" | Cards + `distance_km` (haversine in SQL; no PostGIS) |
+| `GET /api/v1/landmarks/nearby/?lat=&lon=&radius_km=` | "Nearby" | Cards + `distance_km` (haversine in Python over published rows; no PostGIS) |
 | `GET /api/v1/landmarks/{slug}/` | Detail | Full, including models per LOD |
 | `GET /api/v1/landmarks/{slug}/eras/` | Time machine | Eras + sources |
 | `GET /api/v1/landmarks/{slug}/stories/` | Stories containing this landmark | Story summaries |
@@ -173,4 +173,5 @@ stateDiagram-v2
 - Mesh building moves to a **Web Worker**.
 
 ### ADR-7: No PostGIS
-- "Nearby" is a haversine expression over fewer than 1,000 rows, and area polygons are stored as GeoJSON for display only. PostGIS would add an operational dependency for no real gain at this size.
+- "Nearby" computes the haversine distance in Python over the published landmarks (hundreds of rows at most). This is database-agnostic, so it works the same on SQLite in development and PostgreSQL in production. Area polygons are stored as GeoJSON for display only. PostGIS would add an operational dependency for no real gain at this size.
+- **Revisit if** the number of landmarks grows into the thousands.

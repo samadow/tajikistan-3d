@@ -13,11 +13,14 @@ SESSION_COOKIE_SECURE = env("DJANGO_SECURE_COOKIES", "1") == "1"
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {"console": {"class": "logging.StreamHandler"}},
-    "root": {"handlers": ["console"], "level": "INFO"},
+# A file cache is shared by every gunicorn worker in the container, so the
+# content-version counter (cache invalidation) is consistent across workers.
+CACHES = {
+    "default": {
+        "BACKEND": env("CACHE_BACKEND", "django.core.cache.backends.filebased.FileBasedCache"),
+        "LOCATION": env("CACHE_LOCATION", "/tmp/tajikistan3d-cache"),
+        "TIMEOUT": 300,
+    }
 }
 
 # Turn these on once the site is served over HTTPS (see README → Deployment).

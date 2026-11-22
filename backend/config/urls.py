@@ -1,22 +1,17 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import JsonResponse
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
-admin.site.site_header = "Tajikistan 3D — CMS"
-admin.site.site_title = "Tajikistan 3D"
-admin.site.index_title = "Landmarks & content"
-
-
-def health(_request):
-    return JsonResponse({"status": "ok"})
-
+from apps.core.views import health
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include("landmarks.urls")),
-    path("health/", health),
+    path("api/v1/", include("config.api_v1")),
+    path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/v1/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="api-docs"),
+    path("health/", health, name="health"),
 ]
 
 if settings.DEBUG:

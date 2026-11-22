@@ -1,0 +1,56 @@
+{
+  "_comment": "Single source of truth for the map projection. Read by backend/apps/core/geo.py, tools/terrain/build_heightmap.py and (via generated bounds.json) the frontend. 'fixtures' are expected outputs used by tests in Python and TypeScript.",
+  "lonMin": 67.2,
+  "lonMax": 75.3,
+  "latMin": 36.5,
+  "latMax": 41.2,
+  "mapWidth": 100.0,
+  "verticalExaggeration": 3.0,
+  "fixtures": [
+    {
+      "name": "south-west corner",
+      "lat": 36.5,
+      "lon": 67.2,
+      "elevation": 0,
+      "x": -50.0,
+      "y": 0.0,
+      "z": 37.2531
+    },
+    {
+      "name": "north-east corner",
+      "lat": 41.2,
+      "lon": 75.3,
+      "elevation": 0,
+      "x": 50.0,
+      "y": 0.0,
+      "z": -37.2531
+    },
+    {
+      "name": "map centre",
+      "lat": 38.85,
+      "lon": 71.25,
+      "elevation": 0,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    {
+      "name": "Ismoil Somoni Peak (Wikidata Q41413)",
+      "lat": 38.9427,
+      "lon": 72.0153,
+      "elevation": 7495,
+      "x": 9.4481,
+      "y": 3.2019,
+      "z": -1.4695
+    },
+    {
+      "name": "Dushanbe (Wikidata Q9365)",
+      "lat": 38.5731,
+      "lon": 68.7864,
+      "elevation": 800,
+      "x": -30.4148,
+      "y": 0.3418,
+      "z": 4.3895
+    }
+  ]
+}

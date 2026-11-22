@@ -1,7 +1,7 @@
 import gsap from 'gsap'
 import { CatmullRomCurve3, MathUtils, Vector3, type PerspectiveCamera } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import type { LandmarkSummary } from '../../api/types'
+import type { LandmarkMapItem } from '../../api/types'
 import { prefersReducedMotion } from '../../lib/device'
 import { sampleHeight, type TerrainData } from '../../lib/geo'
 import { useAppStore } from '../../store/useAppStore'
@@ -62,7 +62,7 @@ function kill() {
 }
 
 /** Where to put the camera for a landmark, corrected to the actual terrain height. */
-export function landmarkFraming(lm: LandmarkSummary, distanceScale = 1) {
+export function landmarkFraming(lm: LandmarkMapItem, distanceScale = 1) {
   const groundY = terrain ? sampleHeight(terrain, lm.position.x, lm.position.z) : lm.position.y
   const target = new Vector3(lm.camera.target.x, groundY, lm.camera.target.z)
   const offset = new Vector3(
@@ -130,7 +130,7 @@ export function intro(then?: () => void) {
 }
 
 /** Map → fly to landmark → fade → detail stage. */
-export function goToLandmark(lm: LandmarkSummary) {
+export function goToLandmark(lm: LandmarkMapItem) {
   const { mode, setMode, setVeil } = store()
   if (mode === 'detail') {
     // Switching between landmarks inside the detail view: just crossfade.
@@ -159,7 +159,7 @@ export function goToLandmark(lm: LandmarkSummary) {
 }
 
 /** Detail → fade → back over the map → pull back to the overview. */
-export function backToMap(from?: LandmarkSummary) {
+export function backToMap(from?: LandmarkMapItem) {
   const { mode, setMode, setVeil } = store()
   if (mode === 'map' || mode === 'intro') return
   const finish = () => {
@@ -189,7 +189,7 @@ let storyTargets: CatmullRomCurve3 | null = null
 let storyKeys = 0
 
 /** Builds a smooth camera path: overview → each landmark → overview. */
-export function buildStoryPath(landmarks: LandmarkSummary[]) {
+export function buildStoryPath(landmarks: LandmarkMapItem[]) {
   const positions = [overview().position.clone()]
   const targets = [overview().target.clone()]
   for (const lm of landmarks) {
