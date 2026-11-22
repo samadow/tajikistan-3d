@@ -1,0 +1,77 @@
+[
+  {
+    "slug": "sarazm",
+    "lat": 39.5167,
+    "lon": 67.5667
+  },
+  {
+    "slug": "ancient-panjakent",
+    "lat": 39.4855,
+    "lon": 67.6178
+  },
+  {
+    "slug": "haft-kul",
+    "lat": 39.1426,
+    "lon": 67.8549
+  },
+  {
+    "slug": "fann-mountains",
+    "lat": 39.1667,
+    "lon": 68.25
+  },
+  {
+    "slug": "iskandarkul",
+    "lat": 39.0744,
+    "lon": 68.3683
+  },
+  {
+    "slug": "hisor-fortress",
+    "lat": 38.4841,
+    "lon": 68.5934
+  },
+  {
+    "slug": "dushanbe",
+    "lat": 38.574,
+    "lon": 68.7854
+  },
+  {
+    "slug": "ajina-tepa",
+    "lat": 37.798,
+    "lon": 68.8544
+  },
+  {
+    "slug": "nurek-reservoir",
+    "lat": 38.3319,
+    "lon": 69.3619
+  },
+  {
+    "slug": "khujand-fortress",
+    "lat": 40.2848,
+    "lon": 69.6168
+  },
+  {
+    "slug": "ismoil-somoni-peak",
+    "lat": 38.9427,
+    "lon": 72.0153
+  },
+  {
+    "slug": "tajik-national-park",
+    "lat": 38.7412,
+    "lon": 72.1198
+  },
+  {
+    "slug": "yamchun-fortress",
+    "lat": 36.9697,
+    "lon": 72.2608
+  },
+  {
+    "slug": "karakul-lake",
+    "lat": 39.04,
+    "lon": 73.42
+  },
+  {
+    "slug": "pamir-highway",
+    "lat": 38.1711,
+    "lon": 73.9669
+  }
+]

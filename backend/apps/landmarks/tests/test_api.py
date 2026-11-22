@@ -192,3 +192,22 @@ class SeedTests(ApiTestCase):
 
     def test_every_landmark_has_a_coordinate_source(self):
         self.assertFalse(Landmark.objects.filter(coordinates_source="").exists())
+
+
+class TerrainAssetTests(ApiTestCase):
+    """Generated terrain assets must cover the seeded content (tools/terrain/build_heightmap.py)."""
+
+    def test_every_landmark_has_a_detail_patch(self):
+        import json
+        from pathlib import Path
+
+        index = Path(__file__).resolve().parents[4] / "frontend" / "public" / "terrain" / "patches.json"
+        if not index.exists():
+            self.skipTest("terrain assets not built")
+        patches = json.loads(index.read_text(encoding="utf-8"))
+        for landmark in Landmark.objects.all():
+            with self.subTest(landmark.slug):
+                self.assertIn(landmark.slug, patches)
+                p = patches[landmark.slug]
+                self.assertTrue(p["lonMin"] < float(landmark.longitude) < p["lonMax"])
+                self.assertTrue(p["latMin"] < float(landmark.latitude) < p["latMax"])

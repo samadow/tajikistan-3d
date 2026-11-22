@@ -7,9 +7,7 @@
   "mapDepth": 74.506128,
   "heightScale": 0.0004272108,
   "verticalExaggeration": 3.0,
-  "elevationMin": 189.0,
-  "elevationMax": 7592.0,
-  "imageWidth": 1024,
-  "imageHeight": 763,
-  "attribution": "Elevation: AWS Terrain Tiles (Mapzen/SRTM et al.). Border: Natural Earth."
+  "elevationMin": 100.0,
+  "elevationMax": 7684.0,
+  "attribution": "Elevation: AWS Terrain Tiles (SRTM, GMTED, ETOPO1 et al.). Borders: Natural Earth. Lakes & rivers: \u00a9 OpenStreetMap contributors (ODbL), Natural Earth."
 }

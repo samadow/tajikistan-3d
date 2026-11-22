@@ -1,0 +1,122 @@
+{
+ "sarazm": {
+  "lonMin": 67.42696,
+  "lonMax": 67.70644,
+  "latMin": 39.4089,
+  "latMax": 39.6245,
+  "elevationMin": 867.0,
+  "elevationMax": 2834.0
+ },
+ "ancient-panjakent": {
+  "lonMin": 67.47813,
+  "lonMax": 67.75747,
+  "latMin": 39.3777,
+  "latMax": 39.5933,
+  "elevationMin": 899.0,
+  "elevationMax": 2615.0
+ },
+ "haft-kul": {
+  "lonMin": 67.71591,
+  "lonMax": 67.99389,
+  "latMin": 39.0348,
+  "latMax": 39.2504,
+  "elevationMin": 1471.0,
+  "elevationMax": 4476.0
+ },
+ "fann-mountains": {
+  "lonMin": 68.11096,
+  "lonMax": 68.38904,
+  "latMin": 39.0589,
+  "latMax": 39.2745,
+  "elevationMin": 2054.0,
+  "elevationMax": 5462.0
+ },
+ "iskandarkul": {
+  "lonMin": 68.22944,
+  "lonMax": 68.50716,
+  "latMin": 38.9666,
+  "latMax": 39.1822,
+  "elevationMin": 1711.0,
+  "elevationMax": 5243.0
+ },
+ "hisor-fortress": {
+  "lonMin": 68.45569,
+  "lonMax": 68.73111,
+  "latMin": 38.3763,
+  "latMax": 38.5919,
+  "elevationMin": 653.0,
+  "elevationMax": 1621.0
+ },
+ "dushanbe": {
+  "lonMin": 68.64752,
+  "lonMax": 68.92328,
+  "latMin": 38.4662,
+  "latMax": 38.6818,
+  "elevationMin": 703.0,
+  "elevationMax": 2592.0
+ },
+ "ajina-tepa": {
+  "lonMin": 68.71798,
+  "lonMax": 68.99082,
+  "latMin": 37.6902,
+  "latMax": 37.9058,
+  "elevationMin": 382.0,
+  "elevationMax": 1294.0
+ },
+ "nurek-reservoir": {
+  "lonMin": 69.22448,
+  "lonMax": 69.49932,
+  "latMin": 38.2241,
+  "latMax": 38.4397,
+  "elevationMin": 607.0,
+  "elevationMax": 2278.0
+ },
+ "khujand-fortress": {
+  "lonMin": 69.47549,
+  "lonMax": 69.75811,
+  "latMin": 40.177,
+  "latMax": 40.3926,
+  "elevationMin": 271.0,
+  "elevationMax": 1607.0
+ },
+ "ismoil-somoni-peak": {
+  "lonMin": 71.8767,
+  "lonMax": 72.1539,
+  "latMin": 38.8349,
+  "latMax": 39.0505,
+  "elevationMin": 3458.0,
+  "elevationMax": 7444.0
+ },
+ "tajik-national-park": {
+  "lonMin": 71.98159,
+  "lonMax": 72.25801,
+  "latMin": 38.6334,
+  "latMax": 38.849,
+  "elevationMin": 2385.0,
+  "elevationMax": 6572.0
+ },
+ "yamchun-fortress": {
+  "lonMin": 72.12588,
+  "lonMax": 72.39572,
+  "latMin": 36.8619,
+  "latMax": 37.0775,
+  "elevationMin": 2715.0,
+  "elevationMax": 6069.0
+ },
+ "karakul-lake": {
+  "lonMin": 73.28121,
+  "lonMax": 73.55879,
+  "latMin": 38.9322,
+  "latMax": 39.1478,
+  "elevationMin": 3220.0,
+  "elevationMax": 4540.0
+ },
+ "pamir-highway": {
+  "lonMin": 73.82978,
+  "lonMax": 74.10402,
+  "latMin": 38.0633,
+  "latMax": 38.2789,
+  "elevationMin": 3551.0,
+  "elevationMax": 5006.0
+ }
+}
