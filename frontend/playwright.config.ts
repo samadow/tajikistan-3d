@@ -9,6 +9,9 @@ import { defineConfig, devices } from '@playwright/test'
  * WebGL runs on SwiftShader (software) so the suite also works on CI machines
  * without a GPU; timeouts are generous for that reason.
  */
+// E2E_BASE_URL points the suite at an already running deployment (e.g. the
+// production build via `vite preview`, or the Docker stack) and skips the dev servers.
+const external = process.env.E2E_BASE_URL
 const python = process.env.PYTHON ?? (process.platform === 'win32' ? '.venv\\Scripts\\python.exe' : '.venv/bin/python')
 
 export default defineConfig({
@@ -20,13 +23,15 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: external ?? 'http://localhost:5173',
     trace: 'retain-on-failure',
     ...devices['Desktop Chrome'],
     channel: process.env.PW_CHANNEL,
     launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] },
   },
-  webServer: [
+  webServer: external
+    ? undefined
+    : [
     {
       command: `${python} manage.py runserver 127.0.0.1:8000 --noreload`,
       cwd: '../backend',

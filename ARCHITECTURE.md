@@ -1,6 +1,6 @@
 # Architecture — Tajikistan 3D
 
-This document describes the **current** system and the **target** architecture the development plan moves towards. Decisions are recorded as ADRs. Each one names the alternatives that were rejected and the reasons.
+This document describes the system as built (Phases 1–7 are complete; see DEVELOPMENT_PLAN.md). Decisions are recorded as ADRs. Each one names the alternatives that were rejected and the reasons.
 
 ---
 
@@ -104,25 +104,33 @@ Every response keeps `Content-Language`, `Vary: Accept-Language` and `Cache-Cont
 
 ```
 frontend/src/
-  api/          client.ts (fetch + errors), hooks.ts (TanStack Query), types.ts
-  store/        useAppStore.ts (Zustand)
-  i18n/         UI-chrome strings, locale-aware number/coordinate formatting
-  lib/          geo.ts (projection, terrain loader), device.ts (quality tiers), dispose.ts
-  three/
-    Experience.tsx       Canvas, quality, post-processing (lazy chunk)
-    camera/director.ts   every scripted camera move (GSAP)
-    camera/CameraRig.tsx OrbitControls, limits per mode
-    map/                 Terrain, Border, Markers, Atmosphere (+ Water, Globe in later phases)
-    detail/              DetailStage, placeholders/, Hotspots
-  ui/                    DOM overlays (header, map overlay, detail panel, story, 2D fallback)
-  pages/                 (Phase 4+) Discover, History, Stories, About
+  App.tsx              DOM shell; lazy-loads the 3D chunk, pages and story mode
+  api/                 client.ts (v1 endpoints), hooks.ts (TanStack Query, key includes language), types.ts
+  store/               useAppStore.ts (Zustand): mode, language, selection, quality, story progress…
+  i18n/                UI strings + locale-aware number/coordinate/year formatting
+  lib/                 geo.ts (projection + heightmap decoding), device.ts (quality tiers),
+                       models.ts (LOD choice), sound.ts (Web Audio ambience), dispose.ts
+  three/               ── lazy chunk ──
+    ThreeRoot.tsx      entry: <Experience/> + <SceneController/> + skip-intro
+    Experience.tsx     Canvas, tiers, PerformanceMonitor, post-processing, error boundary
+    SceneController    URL → camera (RouteSync), story camera, hotspot focus
+    camera/            director.ts (all scripted moves), CameraRig.tsx (OrbitControls limits)
+    terrain/           mesh.ts (pure builder), terrain.worker.ts, useTerrainGeometry.ts
+    map/               Terrain, DetailPatch, Markers (instanced), Overlays (border, lakes, areas), Atmosphere
+    detail/            DetailStage (GLB fit, hotspots, compare), placeholders/*, hotspotRegistry
+    intro/             Globe
+  ui/                  Header, SearchPalette, MapOverlay, Loader, Map2D (fallback), StoryMode (lazy),
+                       detail/* (DetailView, InfoPanel, TopBar, TimeSlider, HotspotPanel, Gallery, Text),
+                       pages/* (Discover, History, Stories, About)
 ```
 
 ### Scene state machine
 
 ```mermaid
 stateDiagram-v2
-  [*] --> intro: terrain + data loaded
+  [*] --> loading
+  loading --> globe: terrain + data ready
+  globe --> intro: approach Central Asia (veil)
   intro --> map
   map --> flying: select landmark
   flying --> detail: arrived (veil)

@@ -1,0 +1,14 @@
+# HTTPS in front of the stack (docker-compose.prod.yml).
+# Caddy obtains and renews Let's Encrypt certificates automatically for $DOMAIN.
+{$DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	reverse_proxy web:80 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}

@@ -1,7 +1,8 @@
-# Production-like stack: PostgreSQL + Django (gunicorn) + nginx serving the built SPA.
-#   cp .env.example .env   # then edit the secrets
-#   docker compose up --build
-#   open http://localhost:8080  (admin: http://localhost:8080/admin/)
+# Production-like stack: PostgreSQL + Django (gunicorn) + nginx serving the built SPA + backups.
+#   Copy-Item .env.example .env   # then edit the secrets
+#   docker compose up --build -d
+#   open http://localhost:8080  (admin: /admin/, API docs: /api/v1/docs/)
+# HTTPS on a real domain: see docker-compose.prod.yml and docs/development/deployment.md
 services:
   db:
     image: postgres:16-alpine
@@ -26,7 +27,7 @@ services:
     environment:
       POSTGRES_HOST: db
       DJANGO_MEDIA_ROOT: /app/media
-      TRUSTED_PROXIES: "1"   # nginx
+      TRUSTED_PROXIES: "1"   # nginx (set to 2 behind Caddy as well)
     volumes:
       - media:/app/media
     depends_on:
@@ -41,7 +42,31 @@ services:
     volumes:
       - media:/media:ro
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/health/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Daily pg_dump + media archive, kept for BACKUP_KEEP_DAYS (default 14) in ./backups.
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tajikistan3d}
+      POSTGRES_USER: ${POSTGRES_USER:-tajikistan3d}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backups:/backups
+      - media:/media:ro
+      - ./deploy/backup.sh:/backup.sh:ro
+    entrypoint: ["sh", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pgdata:

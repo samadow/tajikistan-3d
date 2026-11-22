@@ -15,6 +15,7 @@ export default defineConfig({
       '/media': { target: API, changeOrigin: false },
       '/admin': { target: API, changeOrigin: false },
       '/static': { target: API, changeOrigin: false },
+      '/health': { target: API, changeOrigin: false },
     },
   },
   build: {

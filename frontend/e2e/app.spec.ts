@@ -15,8 +15,9 @@ test.describe('3D experience', () => {
 
   test('skip intro goes straight to the map', async ({ page }) => {
     await page.goto('/?quality=low')
-    await waitForMode(page, 'globe')
-    await page.getByRole('button', { name: /Гузаштан|Пропустить|Skip/ }).click()
+    const skip = page.getByRole('button', { name: /Гузаштан|Пропустить|Skip/ })
+    await expect(skip).toBeVisible()
+    await skip.click()
     await waitForMode(page, 'map')
   })
 
@@ -84,6 +85,8 @@ test.describe('pages and fallback', () => {
 
   test('search palette (Ctrl+K)', async ({ page }) => {
     await page.goto('/?webgl=0')
+    // Wait until the app has mounted (and registered its shortcut) before pressing it.
+    await expect(page.getByRole('button', { name: /Искандаркӯл/ })).toBeVisible()
     await page.keyboard.press('Control+k')
     await page.getByRole('dialog').getByRole('textbox').fill('сомони')
     await page.keyboard.press('Enter')

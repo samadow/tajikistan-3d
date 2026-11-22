@@ -1,0 +1,32 @@
+# HTTPS overlay for a server with a domain name pointing at it:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+# Requires DOMAIN in .env and ports 80/443 open. Caddy issues certificates automatically.
+services:
+  web:
+    ports: !reset []        # only Caddy is exposed
+
+  backend:
+    environment:
+      TRUSTED_PROXIES: "2"  # Caddy + nginx
+      DJANGO_SECURE_COOKIES: "1"
+      DJANGO_SSL_REDIRECT: "0"  # Caddy already redirects HTTP → HTTPS
+      DJANGO_HSTS_SECONDS: "31536000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  caddy_data:
+  caddy_config:

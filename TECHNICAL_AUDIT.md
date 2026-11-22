@@ -175,3 +175,31 @@ Legend: ✅ done and verified · 🟡 partial · ❌ missing
 | R4 | **Area landmarks** (Tajik National Park, Fann Mountains, the Pamirs) | They should be drawn as areas, not single points. The boundaries can come from OpenStreetMap (ODbL, attribution required). |
 | R5 | **Docker stack never executed** | Needs Docker Desktop running for verification. |
 | R6 | **GitHub repository missing** | The owner must create the repo `samadow/tajikistan-3d` (or approve automated creation). Then `git push -u origin main` works. |
+
+---
+
+## 8. Resolution status (after Phases 1–7, 2026-11-22)
+
+| Item | Status | Where |
+|---|---|---|
+| D1 hotspots on uploaded GLBs | ✅ Fixed. Hotspots render inside the fitted model transform. | `three/detail/DetailStage.tsx` (`FittedGlb`) |
+| D2 three.js in the main chunk | ✅ Fixed. The 3D chunk is lazy, and the main chunk went from 828 kB to 351 kB. | `App.tsx`, `three/ThreeRoot.tsx` |
+| D3 no error boundary for terrain | ✅ Fixed. Scene errors and lost WebGL contexts switch to the 2D interface. | `three/Experience.tsx` (`SceneBoundary`) |
+| D4 hard-coded locale | ✅ Fixed. Locale-aware numbers, and coordinates labelled N/E per language. | `i18n/strings.ts` |
+| D5 throttle identity behind nginx | ✅ Fixed. `NUM_PROXIES` comes from `TRUSTED_PROXIES` (1 behind nginx, 2 with Caddy). | `config/settings/base.py`, compose files |
+| D6 missing-translation fields | ✅ Fixed. Name, subtitle and history are now counted. | `apps/landmarks/models.py` |
+| D7 hero covers the mobile map | ✅ Fixed. The hero collapses after the first interaction. | `ui/MapOverlay.tsx` |
+| Projection defined 3 times | ✅ `shared/projection.json`, with fixture tests in Python and TypeScript | `apps/core/geo.py`, `lib/geo.test.ts` |
+| Large components | ✅ Split into `ui/detail/*` and `three/detail/placeholders/*` | |
+| Story not CMS-driven | ✅ `Story`/`StoryStep` models plus an API, and the camera path is built from the steps | `apps/stories`, `three/SceneController.tsx` |
+| Unverified coordinates | ✅ All 15 checked against Wikidata, with the Q-id stored per landmark | `seed_landmarks.py` |
+| Rivers and lakes | ✅ OSM + Natural Earth: baked into the texture, with 3D lake surfaces | `tools/terrain/build_heightmap.py`, `three/map/Overlays.tsx` |
+| Blurry close-ups | ✅ Detail patches at zoom 11 (~90 m/px), streamed on demand | `three/map/DetailPatch.tsx` |
+| No frontend tests / CI | ✅ Vitest (12), Playwright (10 flows), GitHub Actions | `frontend/e2e`, `.github/workflows/ci.yml` |
+| Backups / monitoring | ✅ Backup service with rotation, `/health/` with a DB check, docs | `docker-compose.yml`, `docs/development/deployment.md` |
+| R1 historical texts | ⏳ **Owner.** The only seeded historical claim is UNESCO-sourced. | Admin |
+| R2 satellite imagery | ⏳ **Owner decision.** Until then the procedural hypsometric texture is used, which has no licence restrictions. | — |
+| R3 sound | ✅ Audio is synthesised in the browser, so no licensed assets are needed | `lib/sound.ts` |
+| R4 area outlines | 🟡 Supported (`area_geojson` is drawn as dashed outlines). The polygons for the national park and the Fann range still need to be entered from OSM. | Admin |
+| R5 Docker | 🟡 Compose files validate (`docker compose config`). An image build was **not** run: Docker Desktop on this machine shuts down before its engine starts. The production configuration was verified instead with Django prod settings, WhiteNoise and the built SPA via `vite preview`, plus the full Playwright suite. | `docs/development/deployment.md` |
+| R6 GitHub | ✅ https://github.com/samadow/tajikistan-3d | |
