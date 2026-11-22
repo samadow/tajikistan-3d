@@ -11,7 +11,7 @@ export function Loader({ progress, done }: { progress: number; done: boolean }) 
   const [hidden, setHidden] = useState(false)
   const [shown, setShown] = useState(0)
 
-  // Ease the displayed number so it never jumps backwards or stalls visibly.
+  // Ease the number so it never jumps backwards or stalls visibly.
   useEffect(() => {
     let raf = 0
     const tick = () => {
@@ -44,32 +44,27 @@ export function Loader({ progress, done }: { progress: number; done: boolean }) 
     >
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgb(34_48_95/0.6),transparent_65%)]" />
       <div className="relative flex flex-col items-center gap-8">
-        <div className="relative text-gold-400">
-          <Rosette size={168} progress={shown / 100} className="spin-slow" />
-          <span className="absolute inset-0 grid place-items-center font-display text-3xl text-parchment tabular-nums">
-            {pct}
-          </span>
-        </div>
+        <Rosette size={168} progress={shown / 100} className="spin-slow text-gold-400" />
         <div className="flex flex-col items-center gap-3">
           <p className="font-display text-4xl tracking-wide md:text-5xl">{t('brand')}</p>
           <p className="kicker">{t('loading')}…</p>
         </div>
-        <div className="h-px w-56 overflow-hidden bg-gold-500/20">
-          <div className="h-full bg-gold-400 transition-[width] duration-300" style={{ width: `${pct}%` }} />
+        <div className="flex w-56 items-center gap-3">
+          <div className="h-px flex-1 overflow-hidden bg-gold-500/20">
+            <div className="h-full bg-gold-400 transition-[width] duration-300" style={{ width: `${pct}%` }} />
+          </div>
+          <span className="w-8 text-right font-display text-lg tabular-nums text-parchment">{pct}</span>
         </div>
       </div>
     </div>
   )
 }
 
-/** Ornamental curtain used to hide the cut between the map and a detail stage. */
+/** Ornamental curtain that hides the cut between the map and a detail stage. */
 export function Veil({ active }: { active: boolean }) {
   return (
-    <div
-      aria-hidden
-      className={`pointer-events-none fixed inset-0 z-40 grid place-items-center bg-ink-900 transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0'}`}
-    >
-      <Rosette size={80} className="text-gold-500/60 spin-slow" />
+    <div aria-hidden className={`pointer-events-none fixed inset-0 z-40 grid place-items-center bg-ink-900 transition-opacity duration-500 ${active ? 'opacity-100' : 'opacity-0'}`}>
+      <Rosette size={80} className="spin-slow text-gold-500/60" />
     </div>
   )
 }

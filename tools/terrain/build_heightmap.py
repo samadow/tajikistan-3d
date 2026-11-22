@@ -424,7 +424,7 @@ def load_landmarks(api: str | None):
 
 
 # ------------------------------------------------------------------- globe
-def build_globe(width=2048):
+def build_globe(width=4096):
     """Stylised night-blue Earth: land, country borders, Tajikistan in gold."""
     height = width // 2
     raster = Raster(-180, 180, -90, 90, width, height)
@@ -433,19 +433,20 @@ def build_globe(width=2048):
     for f in natural_earth("ne_110m_land")["features"]:
         for poly in polygons(f["geometry"]):
             draw.polygon([raster.xy(c[0], c[1]) for c in poly[0]], fill=(24, 36, 74))
-    for f in natural_earth("ne_110m_admin_0_countries")["features"]:
+    # 1:50m borders: crisp enough for the close approach over Central Asia.
+    for f in natural_earth("ne_50m_admin_0_countries")["features"]:
         is_tj = f["properties"].get("ADM0_A3") == "TJK"
         for poly in polygons(f["geometry"]):
             pts = [raster.xy(c[0], c[1]) for c in poly[0]]
             if is_tj:
                 draw.polygon(pts, fill=(212, 166, 74))
-            draw.line(pts + [pts[0]], fill=(242, 196, 107) if is_tj else (52, 68, 120), width=3 if is_tj else 1)
+            draw.line(pts + [pts[0]], fill=(242, 196, 107) if is_tj else (60, 78, 134), width=4 if is_tj else 2)
     img = img.filter(ImageFilter.GaussianBlur(0.6))
     img.save(OUT / "globe.webp", quality=82, method=6)
 
 
 # ---------------------------------------------------------------- patches
-def build_patches(landmarks, rings, lakes, rivers):
+def build_patches(landmarks, rings, lakes, rivers, base_rgb, base_raster):
     """High-resolution heightmap + colour texture around each landmark (zoom 11, ~90 m/px)."""
     print(f"Detail patches (zoom {PATCH_ZOOM})…")
     out_dir = OUT / "patches"
@@ -460,7 +461,20 @@ def build_patches(landmarks, rings, lakes, rivers):
         raster = Raster(b["lonMin"], b["lonMax"], b["latMin"], b["latMax"], PATCH_COLOR_PX, PATCH_COLOR_PX)
         mask = rasterise_mask(raster, rings, blur_px=3)
         water, river = rasterise_water(raster, lakes, rivers, river_scale=2.5)
-        rgb = colourise(elev, mask, PATCH_HALF_KM * 2000 / PATCH_COLOR_PX, water, river)
+        rgb = colourise(elev, mask, PATCH_HALF_KM * 2000 / PATCH_COLOR_PX, water, river).astype(np.float32)
+        # Feather into the country texture: the outer 18 % of the patch blends to the
+        # base colours, so the high-resolution square never shows a seam.
+        x0, y0 = base_raster.xy(b["lonMin"], b["latMax"])
+        x1, y1 = base_raster.xy(b["lonMax"], b["latMin"])
+        base = np.asarray(
+            Image.fromarray(base_rgb).resize((PATCH_COLOR_PX, PATCH_COLOR_PX), Image.Resampling.BICUBIC, box=(x0, y0, x1, y1)),
+            np.float32,
+        )
+        t = np.linspace(0, 1, PATCH_COLOR_PX)
+        edge = np.minimum.outer(np.minimum(t, 1 - t), np.minimum(t, 1 - t))
+        w = np.clip(edge / 0.18, 0, 1)
+        w = (w * w * (3 - 2 * w))[..., None]
+        rgb = np.clip(base * (1 - w) + rgb * w, 0, 255).astype(np.uint8)
         Image.fromarray(rgb).save(out_dir / f"{lm['slug']}.webp", quality=82, method=6)
         e_min, e_max = float(np.floor(elev.min())), float(np.ceil(elev.max()))
         e_max = max(e_max, e_min + 1)
@@ -557,7 +571,7 @@ def main() -> None:
     (OUT / "bounds.json").write_text(json.dumps(bounds, indent=2))
 
     if not args.skip_patches:
-        build_patches(load_landmarks(args.api), rings, lakes, rivers)
+        build_patches(load_landmarks(args.api), rings, lakes, rivers, rgb, raster)
 
     print("Globe…")
     build_globe()

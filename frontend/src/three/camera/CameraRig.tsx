@@ -11,6 +11,7 @@ export function CameraRig() {
   const controlsRef = useRef<OrbitControlsImpl>(null)
   const camera = useThree((s) => s.camera) as PerspectiveCamera
   const mode = useAppStore((s) => s.mode)
+  const markInteracted = useAppStore((s) => s.markInteracted)
 
   useEffect(() => {
     if (controlsRef.current) registerCamera(camera, controlsRef.current)
@@ -30,16 +31,17 @@ export function CameraRig() {
       zoomSpeed={0.8}
       enablePan={!detail}
       screenSpacePanning={false}
-      minDistance={detail ? 3.5 : 6}
+      minDistance={detail ? 2.5 : 6}
       maxDistance={detail ? 26 : 250}
       minPolarAngle={detail ? 0.2 : 0.15}
       maxPolarAngle={detail ? 1.45 : 1.3}
       autoRotate={detail}
       autoRotateSpeed={0.6}
+      onStart={markInteracted}
       onChange={() => {
         // Keep the map target over the country so users cannot pan into the void.
         const ctl = controlsRef.current
-        if (!ctl || detail) return
+        if (!ctl || mode !== 'map') return
         ctl.target.x = Math.max(-48, Math.min(48, ctl.target.x))
         ctl.target.z = Math.max(-36, Math.min(36, ctl.target.z))
       }}

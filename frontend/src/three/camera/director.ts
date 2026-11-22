@@ -1,48 +1,32 @@
 import gsap from 'gsap'
 import { CatmullRomCurve3, MathUtils, Vector3, type PerspectiveCamera } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
-import type { LandmarkMapItem } from '../../api/types'
+import type { CameraFraming, LandmarkMapItem } from '../../api/types'
 import { prefersReducedMotion } from '../../lib/device'
-import { sampleHeight, type TerrainData } from '../../lib/geo'
+import type { TerrainData } from '../../lib/geo'
 import { useAppStore } from '../../store/useAppStore'
+import { GLOBE_RADIUS, TAJIKISTAN_DIR } from '../intro/Globe'
+import { terrainHeightAt } from '../terrain/mesh'
 
 /**
- * The "director" owns every scripted camera move: the intro, fly-to, the
- * map ↔ detail transition and the scroll-driven story path. React components
- * call these functions; the CameraRig registers the camera and controls.
+ * The director owns every scripted camera move (ADR-5): the globe intro, the
+ * descent, fly-to, map ↔ detail, hotspot focus and the story spline.
+ * OrbitControls owns user input and is disabled while a move runs. Starting
+ * a move kills the previous one, so moves never compete.
  */
 
-// Camera moves follow wall-clock time: on a slow frame the camera jumps ahead
-// instead of the whole flight turning into slow motion.
+// Moves follow wall-clock time: slow devices skip frames instead of slow motion.
 gsap.ticker.lagSmoothing(0)
 
 const DIRECTION = new Vector3(0, 0.72, 0.7).normalize()
-
-/**
- * Overview framing, recomputed for the current viewport: the camera backs off
- * until the country fits horizontally. On wide screens the target sits west of
- * centre so the map clears the hero text on the left.
- */
-export function overview() {
-  const aspect = window.innerWidth / Math.max(window.innerHeight, 1)
-  const fit = 40 / (Math.tan(MathUtils.degToRad(20)) * aspect)
-  const distance = MathUtils.clamp(fit, 100, 240)
-  const target = new Vector3(window.innerWidth >= 1024 ? -13 : -2, 0, aspect < 1 ? 6 : 2)
-  return { position: target.clone().addScaledVector(DIRECTION, distance), target }
-}
-
-/** Detail framing: further away on narrow screens, where the model shares space with the panel. */
-export function detailView() {
-  const scale = window.innerWidth < 1024 ? 1.45 : 1
-  return { position: new Vector3(8.4, 5.6, 11).multiplyScalar(scale), target: new Vector3(0, 0.8, 0) }
-}
-
-const INTRO_FROM = new Vector3(-20, 170, 170)
+const VEIL_MS = 450
 
 let camera: PerspectiveCamera | null = null
 let controls: OrbitControlsImpl | null = null
 let terrain: TerrainData | null = null
-let tween: gsap.core.Tween | gsap.core.Timeline | null = null
+let tween: gsap.core.Tween | null = null
+let savedView: { position: Vector3; target: Vector3 } | null = null
+const timers = new Set<ReturnType<typeof setTimeout>>()
 
 export function registerCamera(cam: PerspectiveCamera, ctl: OrbitControlsImpl) {
   camera = cam
@@ -54,56 +38,82 @@ export function registerTerrain(data: TerrainData) {
 }
 
 const store = () => useAppStore.getState()
-const veilDuration = 450
 
-function kill() {
-  tween?.kill()
-  tween = null
+function later(fn: () => void, ms: number) {
+  const id = setTimeout(() => {
+    timers.delete(id)
+    fn()
+  }, ms)
+  timers.add(id)
 }
 
-/** Where to put the camera for a landmark, corrected to the actual terrain height. */
-export function landmarkFraming(lm: LandmarkMapItem, distanceScale = 1) {
-  const groundY = terrain ? sampleHeight(terrain, lm.position.x, lm.position.z) : lm.position.y
-  const target = new Vector3(lm.camera.target.x, groundY, lm.camera.target.z)
+/** Stops any running move or pending step. */
+export function stop() {
+  tween?.kill()
+  tween = null
+  timers.forEach(clearTimeout)
+  timers.clear()
+}
+
+/** Overview framing for the current viewport: backs off until the country fits. */
+export function overview() {
+  const aspect = window.innerWidth / Math.max(window.innerHeight, 1)
+  const fit = 40 / (Math.tan(MathUtils.degToRad(20)) * aspect)
+  const distance = MathUtils.clamp(fit, 100, 240)
+  // On wide screens the target sits west of centre so the map clears the hero text.
+  const target = new Vector3(window.innerWidth >= 1024 ? -13 : -2, 0, aspect < 1 ? 6 : 2)
+  return { position: target.clone().addScaledVector(DIRECTION, distance), target }
+}
+
+/** Detail framing: further away on narrow screens, where the model shares space with the panel. */
+export function detailView() {
+  const scale = window.innerWidth < 1024 ? 1.45 : 1
+  return { position: new Vector3(8.4, 5.6, 11).multiplyScalar(scale), target: new Vector3(0, 0.8, 0) }
+}
+
+/** Where to look at a landmark from, corrected to the real terrain height. */
+export function landmarkFraming(framing: CameraFraming, distanceScale = 1) {
+  const ground = terrain ? terrainHeightAt(terrain, framing.target.x, framing.target.z) : framing.target.y
+  const target = new Vector3(framing.target.x, ground, framing.target.z)
   const offset = new Vector3(
-    lm.camera.position.x - lm.camera.target.x,
-    lm.camera.position.y - lm.camera.target.y,
-    lm.camera.position.z - lm.camera.target.z,
+    framing.position.x - framing.target.x,
+    framing.position.y - framing.target.y,
+    framing.position.z - framing.target.z,
   ).multiplyScalar(distanceScale)
   return { position: target.clone().add(offset), target }
 }
 
 /**
- * Flies along an arc: position and target are interpolated together, and the
- * position is lifted in the middle so long flights rise above the mountains.
+ * Flies along an arc: position and target are interpolated together and the
+ * position is lifted mid-flight so long journeys rise above the mountains.
  */
 export function flyTo(
   toPosition: Vector3,
   toTarget: Vector3,
-  { duration = 2.4, lift = 1, onComplete }: { duration?: number; lift?: number; onComplete?: () => void } = {},
+  { duration = 2.4, lift = 1, ease = 'power3.inOut', onComplete }: { duration?: number; lift?: number; ease?: string; onComplete?: () => void } = {},
 ) {
   if (!camera || !controls) return
-  kill()
+  tween?.kill()
   const cam = camera
   const ctl = controls
   const fromPos = cam.position.clone()
   const fromTarget = ctl.target.clone()
-  const distance = fromPos.distanceTo(toPosition)
-  const arc = Math.min(distance * 0.35, 40) * lift
+  const arc = Math.min(fromPos.distanceTo(toPosition) * 0.35, 40) * lift
   const state = { t: 0 }
-  const d = prefersReducedMotion() ? 0.01 : duration
   tween = gsap.to(state, {
     t: 1,
-    duration: d,
-    ease: 'power3.inOut',
+    duration: prefersReducedMotion() ? 0.01 : duration,
+    ease,
     onUpdate: () => {
-      const t = state.t
-      cam.position.lerpVectors(fromPos, toPosition, t)
-      cam.position.y += Math.sin(Math.PI * t) * arc
-      ctl.target.lerpVectors(fromTarget, toTarget, t)
+      cam.position.lerpVectors(fromPos, toPosition, state.t)
+      cam.position.y += Math.sin(Math.PI * state.t) * arc
+      ctl.target.lerpVectors(fromTarget, toTarget, state.t)
       ctl.update()
     },
-    onComplete,
+    onComplete: () => {
+      tween = null
+      onComplete?.()
+    },
   })
 }
 
@@ -114,91 +124,157 @@ function setView(position: Vector3, target: Vector3) {
   controls.update()
 }
 
-/** Opening shot after loading: drop from high orbit to the overview. */
+/** Fades the veil in, runs `swap` while the screen is covered, then fades out. */
+function throughVeil(swap: () => void) {
+  store().setVeil(true)
+  later(() => {
+    swap()
+    store().setVeil(false)
+  }, VEIL_MS)
+}
+
+// --- Intro ---------------------------------------------------------------------------
+
+/**
+ * Opening shot: Earth from space → approach Central Asia → veil → descend onto
+ * the relief map. Reduced motion skips straight to the map.
+ */
 export function intro(then?: () => void) {
   if (!camera || !controls) return
-  setView(INTRO_FROM, overview().target)
-  store().setMode('intro')
-  flyTo(overview().position, overview().target, {
-    duration: 3.6,
-    lift: 0,
-    onComplete: () => {
-      store().setMode('map')
-      then?.()
-    },
-  })
-}
-
-/** Map → fly to landmark → fade → detail stage. */
-export function goToLandmark(lm: LandmarkMapItem) {
-  const { mode, setMode, setVeil } = store()
-  if (mode === 'detail') {
-    // Switching between landmarks inside the detail view: just crossfade.
-    setVeil(true)
-    setTimeout(() => {
-      setView(detailView().position.clone().multiplyScalar(1.4), detailView().target)
-      setVeil(false)
-      flyTo(detailView().position, detailView().target, { duration: 1.6, lift: 0 })
-    }, veilDuration)
+  stop()
+  if (prefersReducedMotion()) {
+    skipIntro()
+    then?.()
     return
   }
-  setMode('flying')
-  const { position, target } = landmarkFraming(lm)
-  flyTo(position, target, {
-    duration: 2.6,
-    onComplete: () => {
-      setVeil(true)
-      setTimeout(() => {
-        setMode('detail')
-        setView(detailView().position.clone().multiplyScalar(1.6), detailView().target)
-        setVeil(false)
-        flyTo(detailView().position, detailView().target, { duration: 1.8, lift: 0 })
-      }, veilDuration)
-    },
+  const up = new Vector3(0, 1, 0)
+  const start = TAJIKISTAN_DIR.clone().applyAxisAngle(up, -0.9).multiplyScalar(GLOBE_RADIUS * 4.2)
+  setView(start, new Vector3(0, 0, 0))
+  store().setMode('globe')
+  flyTo(TAJIKISTAN_DIR.clone().multiplyScalar(GLOBE_RADIUS * 1.9), TAJIKISTAN_DIR.clone().multiplyScalar(GLOBE_RADIUS), {
+    duration: 4.2,
+    lift: 0,
+    ease: 'power2.inOut',
+    onComplete: () => descend(then),
   })
 }
 
-/** Detail → fade → back over the map → pull back to the overview. */
+function descend(then?: () => void) {
+  throughVeil(() => {
+    store().setMode('intro')
+    const o = overview()
+    setView(new Vector3(o.target.x - 10, 170, o.target.z + 160), o.target)
+    flyTo(o.position, o.target, {
+      duration: 3.2,
+      lift: 0,
+      onComplete: () => {
+        store().setMode('map')
+        then?.()
+      },
+    })
+  })
+}
+
+/** Jump straight to the map (skip button, reduced motion). */
+export function skipIntro() {
+  stop()
+  store().setVeil(false)
+  const o = overview()
+  setView(o.position, o.target)
+  store().setMode('map')
+}
+
+// --- Landmarks -------------------------------------------------------------------------
+
+/** Map → arc flight to the landmark → veil → its own detail stage. */
+export function goToLandmark(lm: LandmarkMapItem) {
+  const { mode, setMode } = store()
+  if (mode === 'detail') {
+    // Landmark → landmark inside the detail view: crossfade only.
+    stop()
+    throughVeil(() => {
+      const d = detailView()
+      setView(d.position.clone().multiplyScalar(1.4), d.target)
+      flyTo(d.position, d.target, { duration: 1.6, lift: 0 })
+    })
+    return
+  }
+  if (mode === 'map' && camera && controls) {
+    savedView = { position: camera.position.clone(), target: controls.target.clone() }
+  }
+  stop()
+  setMode('flying')
+  const { position, target } = landmarkFraming(lm.camera)
+  flyTo(position, target, {
+    duration: 2.6,
+    onComplete: () =>
+      throughVeil(() => {
+        setMode('detail')
+        const d = detailView()
+        setView(d.position.clone().multiplyScalar(1.6), d.target)
+        flyTo(d.position, d.target, { duration: 1.8, lift: 0 })
+      }),
+  })
+}
+
+/** Detail → veil → above the landmark on the map → back to where the user was. */
 export function backToMap(from?: LandmarkMapItem) {
-  const { mode, setMode, setVeil } = store()
-  if (mode === 'map' || mode === 'intro') return
+  const { mode, setMode } = store()
+  if (mode === 'map' || mode === 'globe' || mode === 'intro' || mode === 'loading') return
+  const destination = savedView ?? overview()
+  savedView = null
   const finish = () => {
     setMode('flying')
-    flyTo(overview().position, overview().target, { duration: 2.4, onComplete: () => setMode('map') })
+    flyTo(destination.position, destination.target, { duration: 2.4, onComplete: () => setMode('map') })
   }
+  stop()
   if (mode === 'detail') {
-    setVeil(true)
-    setTimeout(() => {
+    throughVeil(() => {
       setMode('flying')
       if (from) {
-        const { position, target } = landmarkFraming(from)
+        const { position, target } = landmarkFraming(from.camera)
         setView(position, target)
       }
-      setVeil(false)
       finish()
-    }, veilDuration)
+    })
   } else {
     finish()
   }
 }
 
-// --- Story mode ----------------------------------------------------------------
+// --- Hotspots --------------------------------------------------------------------------
+
+/** Moves the detail camera towards a point on the model, keeping the viewing direction. */
+export function focusPoint(point: Vector3, distance?: number | null) {
+  if (!camera || !controls) return
+  const dir = camera.position.clone().sub(controls.target).normalize()
+  const d = distance ?? 4.5
+  flyTo(point.clone().addScaledVector(dir, d), point.clone(), { duration: 1.2, lift: 0, ease: 'power2.inOut' })
+}
+
+export function resetFocus() {
+  const d = detailView()
+  flyTo(d.position, d.target, { duration: 1.2, lift: 0, ease: 'power2.inOut' })
+}
+
+// --- Story -----------------------------------------------------------------------------
 
 let storyPositions: CatmullRomCurve3 | null = null
 let storyTargets: CatmullRomCurve3 | null = null
 let storyKeys = 0
 
-/** Builds a smooth camera path: overview → each landmark → overview. */
-export function buildStoryPath(landmarks: LandmarkMapItem[]) {
-  const positions = [overview().position.clone()]
-  const targets = [overview().target.clone()]
-  for (const lm of landmarks) {
-    const framing = landmarkFraming(lm, 2)
-    positions.push(framing.position)
-    targets.push(framing.target)
+/** Builds a smooth camera path: overview → each step → pulled-back overview. */
+export function buildStoryPath(steps: CameraFraming[]) {
+  const o = overview()
+  const positions = [o.position.clone()]
+  const targets = [o.target.clone()]
+  for (const framing of steps) {
+    const f = landmarkFraming(framing, 2)
+    positions.push(f.position)
+    targets.push(f.target)
   }
-  positions.push(overview().position.clone().add(new Vector3(0, 6, 8)))
-  targets.push(overview().target.clone())
+  positions.push(o.position.clone().add(new Vector3(0, 6, 8)))
+  targets.push(o.target.clone())
   storyPositions = new CatmullRomCurve3(positions, false, 'centripetal')
   storyTargets = new CatmullRomCurve3(targets, false, 'centripetal')
   storyKeys = positions.length
@@ -208,35 +284,37 @@ const tmpPos = new Vector3()
 const tmpTarget = new Vector3()
 
 /**
- * progress 0..1 across all keys. Each segment is eased (smoothstep) so the
- * camera lingers at every landmark instead of moving at constant speed.
+ * Story progress 0..1 across all keys → camera. Each segment is eased so the
+ * camera lingers at every stop; with reduced motion it snaps between stops.
+ * Returns the index of the nearest key (0 = intro, 1..n = steps, n+1 = outro).
  */
-export function setStoryProgress(progress: number) {
-  if (!camera || !controls || !storyPositions || !storyTargets) return
-  kill()
+export function setStoryProgress(progress: number): number {
+  if (!camera || !controls || !storyPositions || !storyTargets) return 0
+  tween?.kill()
   const segments = storyKeys - 1
   const raw = MathUtils.clamp(progress, 0, 1) * segments
   const index = Math.min(Math.floor(raw), segments - 1)
   const local = raw - index
-  const eased = local * local * (3 - 2 * local)
+  const eased = prefersReducedMotion() ? Math.round(local) : local * local * (3 - 2 * local)
   const t = (index + eased) / segments
   storyPositions.getPoint(t, tmpPos)
   storyTargets.getPoint(t, tmpTarget)
   camera.position.copy(tmpPos)
   controls.target.copy(tmpTarget)
   controls.update()
-  store().setStoryIndex(Math.round(raw))
+  return Math.round(raw)
 }
 
 export function enterStory() {
+  stop()
   store().setMode('story')
-  if (storyPositions) {
-    flyTo(storyPositions.getPoint(0), storyTargets!.getPoint(0), { duration: 1.4, lift: 0.4 })
-  }
+  if (storyPositions && storyTargets) flyTo(storyPositions.getPoint(0), storyTargets.getPoint(0), { duration: 1.4, lift: 0.4 })
 }
 
 export function exitStory() {
   if (store().mode !== 'story') return
+  stop()
   store().setMode('flying')
-  flyTo(overview().position, overview().target, { duration: 2, onComplete: () => store().setMode('map') })
+  const o = overview()
+  flyTo(o.position, o.target, { duration: 2, onComplete: () => store().setMode('map') })
 }

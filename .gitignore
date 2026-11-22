@@ -22,3 +22,6 @@ tools/.venv/
 Thumbs.db
 .vscode/
 .idea/
+
+frontend/test-results/
+frontend/playwright-report/

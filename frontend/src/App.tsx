@@ -1,115 +1,139 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+/**
+ * DOM shell. It never imports from ./three — the 3D chunk (three.js, R3F,
+ * drei, GSAP) is loaded lazily, so the 2D fallback stays light (audit D2).
+ */
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useMatch } from 'react-router-dom'
 import { useLandmarks } from './api/hooks'
 import { useT } from './i18n/strings'
 import { hasWebGL } from './lib/device'
+import { Ambience } from './lib/sound'
 import { useAppStore } from './store/useAppStore'
-import { backToMap, enterStory, exitStory, goToLandmark, intro } from './three/camera/director'
-import { DetailView } from './ui/DetailPanel'
+import { DetailView } from './ui/detail/DetailView'
 import { Header } from './ui/Header'
 import { Loader, Veil } from './ui/Loader'
 import { Map2D } from './ui/Map2D'
-import { MapOverlay } from './ui/MapOverlay'
-import { StoryMode } from './ui/StoryMode'
+import { GlobeCaption, MapOverlay } from './ui/MapOverlay'
+import { Spinner } from './ui/pages/PageShell'
+import { SearchPalette } from './ui/SearchPalette'
 
-// The 3D bundle (three, R3F, drei, postprocessing) loads in parallel with the UI.
-const Experience = lazy(() => import('./three/Experience'))
+const ThreeRoot = lazy(() => import('./three/ThreeRoot'))
+const StoryMode = lazy(() => import('./ui/StoryMode'))
+const Discover = lazy(() => import('./ui/pages/Discover'))
+const History = lazy(() => import('./ui/pages/History'))
+const Stories = lazy(() => import('./ui/pages/Stories'))
+const About = lazy(() => import('./ui/pages/About'))
 
-/**
- * Keeps the 3D scene in step with the URL. The URL is the source of truth, so
- * deep links (/place/iskandarkul), the back button and sharing all work.
- */
-function RouteSync() {
-  const location = useLocation()
-  const place = useMatch('/place/:slug')
-  const slug = place?.params.slug ?? null
-  const { data: landmarks } = useLandmarks()
-  const terrainReady = useAppStore((s) => s.terrainReady)
-  const select = useAppStore((s) => s.select)
-  const started = useRef(false)
-  const lastPath = useRef<string | null>(null)
-  const lastSlug = useRef<string | null>(null)
-
+/** Ambient sound follows the toggle and the scene phase. */
+function SoundController() {
+  const soundOn = useAppStore((s) => s.soundOn)
+  const mode = useAppStore((s) => s.mode)
+  const ambience = useRef<Ambience | null>(null)
   useEffect(() => {
-    if (!terrainReady || !landmarks) return
-    const path = location.pathname
-    if (path === lastPath.current) return
-    const previous = lastSlug.current ? landmarks.find((l) => l.slug === lastSlug.current) : undefined
-    lastPath.current = path
-    lastSlug.current = slug
-
-    const target = slug ? landmarks.find((l) => l.slug === slug) : undefined
-    select(slug)
-
-    const act = () => {
-      if (target) goToLandmark(target)
-      else if (path === '/story') enterStory()
-      else {
-        exitStory()
-        backToMap(previous)
-      }
+    if (!soundOn) {
+      ambience.current?.stop()
+      return
     }
-
-    if (!started.current) {
-      started.current = true
-      // First visit: always play the intro, then continue to the requested route.
-      intro(path === '/' ? undefined : act)
-    } else {
-      act()
-    }
-  }, [location.pathname, slug, terrainReady, landmarks, select])
-
+    ambience.current ??= new Ambience()
+    ambience.current.start()
+  }, [soundOn])
+  useEffect(() => {
+    ambience.current?.setMood(mode === 'globe' ? 'space' : mode === 'detail' ? 'detail' : 'map')
+  }, [mode])
+  useEffect(() => () => ambience.current?.dispose(), [])
   return null
+}
+
+function Pages() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <Routes>
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/stories" element={<Stories />} />
+        <Route path="/about" element={<About />} />
+        <Route path="*" element={null} />
+      </Routes>
+    </Suspense>
+  )
 }
 
 export default function App() {
   const t = useT()
-  const [webgl] = useState(hasWebGL)
-  const [progress, setProgress] = useState(0)
+  const [webglSupported] = useState(hasWebGL)
+  const webglFailed = useAppStore((s) => s.webglFailed)
+  const webgl = webglSupported && !webglFailed
   const terrainReady = useAppStore((s) => s.terrainReady)
+  const loadProgress = useAppStore((s) => s.loadProgress)
   const veil = useAppStore((s) => s.veil)
   const { data: landmarks, isError, refetch } = useLandmarks()
   const place = useMatch('/place/:slug')
-  const onProgress = useCallback((p: number) => setProgress(p), [])
+  const location = useLocation()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const isStory = location.pathname.startsWith('/story')
+  const isPage = ['/discover', '/history', '/stories', '/about'].includes(location.pathname)
 
   useEffect(() => {
     document.documentElement.lang = useAppStore.getState().lang
-    // Expose the scene phase for CSS hooks and automated checks.
+    // Expose the scene phase for CSS hooks and end-to-end tests.
     return useAppStore.subscribe((s) => {
       document.body.dataset.mode = s.mode
     })
   }, [])
 
-  const done = (webgl ? terrainReady : true) && (!!landmarks || isError)
-  // Terrain decoding has no granular progress; count it as the first 70%.
-  const combined = (terrainReady ? 70 : 35) + (progress / 100) * 30
+  useEffect(() => {
+    if (!isPage && !place) document.title = `${t('brand')} 3D`
+  }, [isPage, place, t])
+
+  // Ctrl+K or "/" opens search.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const typing = (e.target as HTMLElement).closest('input, textarea')
+      if ((e.key === 'k' && (e.ctrlKey || e.metaKey)) || (e.key === '/' && !typing)) {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Content pages do not need the relief, so they are not held behind the loader.
+  const done = (webgl && !isPage ? terrainReady : true) && (!!landmarks || isError)
+  // Terrain decoding has no granular progress: count it as the first 70 %.
+  const progress = (terrainReady ? 70 : 35) + (loadProgress / 100) * 30
 
   return (
     <>
+      <a href="#content" className="sr-only z-[60] rounded-full bg-gold-400 px-4 py-2 text-ink-900 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+        {t('skipToContent')}
+      </a>
+
       {webgl && (
         <Suspense fallback={null}>
-          <Experience onProgress={onProgress} />
+          <ThreeRoot />
         </Suspense>
       )}
-      {webgl && <RouteSync />}
-      <Header webgl={webgl} />
+      <Header webgl={webgl} onSearch={() => setSearchOpen(true)} />
 
       {webgl ? (
-        <Routes>
-          <Route path="/" element={<MapOverlay />} />
-          <Route path="/place/:slug" element={null} />
-          <Route path="/story" element={<StoryMode />} />
-          <Route path="*" element={<MapOverlay />} />
-        </Routes>
+        <>
+          {location.pathname === '/' && <MapOverlay />}
+          <GlobeCaption />
+          {isStory && (
+            <Suspense fallback={null}>
+              <StoryMode />
+            </Suspense>
+          )}
+        </>
       ) : (
-        <Routes>
-          <Route path="*" element={place ? null : <Map2D />} />
-        </Routes>
+        !place && !isPage && <Map2D />
       )}
+      <Pages />
       {place?.params.slug && <DetailView slug={place.params.slug} webgl={webgl} />}
 
       {isError && !landmarks && (
-        <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
+        <div className="fixed inset-x-0 bottom-6 z-40 flex justify-center px-4" role="alert">
           <div className="glass flex items-center gap-4 rounded-full px-5 py-3 text-sm">
             {t('error')}
             <button type="button" className="text-gold-300 underline" onClick={() => refetch()}>
@@ -119,8 +143,10 @@ export default function App() {
         </div>
       )}
 
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SoundController />
       <Veil active={veil} />
-      <Loader progress={combined} done={done} />
+      <Loader progress={webgl ? progress : 100} done={done} />
       <div className="grain" aria-hidden />
     </>
   )
