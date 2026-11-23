@@ -26,3 +26,7 @@ Thumbs.db
 frontend/test-results/
 frontend/playwright-report/
 backups/
+
+# Local browser-automation output
+.playwright-cli/
+scratch-*.png
