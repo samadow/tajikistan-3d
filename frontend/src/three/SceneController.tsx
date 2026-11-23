@@ -24,7 +24,8 @@ function RouteSync() {
   useEffect(() => {
     if (!terrainReady || !landmarks) return
     const path = location.pathname
-    if (path === lastPath.current) return
+    // The real map (/map) has its own renderer; the paused scene keeps its last view.
+    if (path === lastPath.current || path === '/map') return
     const previous = lastSlug.current ? landmarks.find((l) => l.slug === lastSlug.current) : undefined
     const wasStory = lastPath.current?.startsWith('/story') ?? false
     lastPath.current = path

@@ -5,6 +5,8 @@ import type {
   LandmarkCard,
   LandmarkDetail,
   LandmarkMapItem,
+  MapConfig,
+  NearbyMedia,
   Paginated,
   SitePage,
   StoryDetail,
@@ -60,4 +62,7 @@ export const api = {
     get<StoryDetail>(`stories/${encodeURIComponent(slug)}/`, { lang }, signal),
   page: (slug: string, lang: Lang, signal?: AbortSignal) =>
     get<SitePage>(`pages/${encodeURIComponent(slug)}/`, { lang }, signal),
+  mapConfig: (signal?: AbortSignal) => get<MapConfig>('map-config/', {}, signal),
+  nearbyMedia: (lat: number, lon: number, radius: number, signal?: AbortSignal) =>
+    get<NearbyMedia>('nearby-media/', { lat: lat.toFixed(5), lon: lon.toFixed(5), radius }, signal),
 }

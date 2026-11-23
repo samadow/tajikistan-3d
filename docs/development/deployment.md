@@ -31,6 +31,15 @@ To generate a secret key:
 python -c "import secrets; print(secrets.token_urlsafe(50))"
 ```
 
+### Optional keys for the real map
+
+| Variable | Effect |
+|---|---|
+| `ARCGIS_API_KEY` | High-resolution satellite imagery (Esri). Restrict the key to your domain in the ArcGIS dashboard, because the browser sees it. |
+| `MAPILLARY_TOKEN` | Street-level photos and 360° panoramas from Mapillary. Use a *client* token, which is public by design. |
+
+Run `docker compose up -d backend` after changing them. No frontend rebuild is needed.
+
 ## 2. HTTPS on a domain
 
 1. Point the domain's DNS A/AAAA records at the server, and open ports 80 and 443.

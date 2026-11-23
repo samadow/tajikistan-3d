@@ -24,12 +24,12 @@ function SkipIntro() {
   )
 }
 
-export default function ThreeRoot() {
+export default function ThreeRoot({ paused = false }: { paused?: boolean }) {
   return (
     <>
-      <Experience />
+      <Experience paused={paused} />
       <SceneController />
-      <SkipIntro />
+      {!paused && <SkipIntro />}
     </>
   )
 }

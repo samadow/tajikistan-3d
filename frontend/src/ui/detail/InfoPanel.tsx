@@ -99,6 +99,12 @@ export function InfoPanel({ landmark, webgl }: { landmark: LandmarkDetail; webgl
             {landmark.best_season || <span className="italic text-mist/70">—</span>}
           </Fact>
         </dl>
+        <Link
+          to={`/map#${landmark.placeholder === 'settlement' ? 13 : 12.5}/${landmark.latitude.toFixed(5)}/${landmark.longitude.toFixed(5)}/0/55`}
+          className="btn-ghost mt-6 inline-flex"
+        >
+          {t('openRealMap')} →
+        </Link>
 
         {landmark.short_description && <p className="mt-8 text-lg leading-relaxed text-parchment">{landmark.short_description}</p>}
 

@@ -207,3 +207,35 @@ export interface SitePage {
   body: string
   updated_at: string
 }
+
+/** /nearby-media/: openly licensed photos and 360° panoramas around a point. */
+export interface MediaItem {
+  id: string
+  source: 'commons' | 'panoramax' | 'mapillary'
+  kind: 'photo' | 'pano'
+  title: string
+  thumb: string
+  full: string
+  page: string
+  author: string
+  license: string
+  license_url: string
+  date: string
+  lat: number | null
+  lon: number | null
+  distance_m: number | null
+}
+
+export interface NearbyMedia {
+  panoramas: MediaItem[]
+  photos: MediaItem[]
+  sources_failed: string[]
+  mapillary_enabled: boolean
+}
+
+/** /map-config/: runtime settings of the real map. */
+export interface MapConfig {
+  satellite: { tiles: string[]; maxzoom: number; attribution: string; high_resolution: boolean }
+  mapillary_enabled: boolean
+  mapillary_token: string
+}

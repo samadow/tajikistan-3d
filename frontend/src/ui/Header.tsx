@@ -7,6 +7,7 @@ import { StarMark } from './Ornament'
 
 const NAV: { to: string; key: StringKey; end?: boolean; needs3d?: boolean }[] = [
   { to: '/', key: 'explore', end: true },
+  { to: '/map', key: 'realMap' },
   { to: '/discover', key: 'discover' },
   { to: '/history', key: 'history' },
   { to: '/stories', key: 'stories', needs3d: true },

@@ -10,8 +10,9 @@ Because of the software renderer, frame rates from this run are **not** meaningf
 
 | Chunk | Size | gzip | When it loads |
 |---|---|---|---|
-| `index` (React, router, query, UI shell) | 351 kB | **111 kB** | Always |
-| `ThreeRoot` (three.js, R3F, drei, postprocessing, GSAP core) | 1,317 kB | 375 kB | In parallel, only when WebGL is available |
+| `index` (React, router, query, UI shell) | 306 kB | **95 kB** | Always |
+| `ThreeRoot` + shared `three` (R3F, drei, postprocessing, GSAP core) | 575 + 744 kB | 190 + 188 kB | In parallel, only when WebGL is available |
+| `RealMap` (MapLibre GL, panel, search, 360° viewer) | 1,059 kB + 70 kB CSS | 284 + 10 kB | Only on `/map`. A direct visit to `/map` never downloads the 3D scene; the 360° viewer reuses the shared `three` chunk |
 | `StoryMode` + `gsap` (ScrollTrigger) | 48 + 70 kB | 19 + 27 kB | Only on `/story` |
 | Pages (Discover, History, Stories, About) | 0.6–3.7 kB each | < 2 kB | On visit |
 | CSS | 49 kB | 9.5 kB | Always |

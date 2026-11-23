@@ -12,10 +12,15 @@ An immersive WebGL platform for exploring Tajikistan. It opens from space over C
 | **Time machine (before / after)** | **Story mode** | **Mobile** |
 | ![Time machine](docs/screenshots/time-machine.jpg) | ![Story](docs/screenshots/story.jpg) | ![Mobile](docs/screenshots/mobile-map.jpg) |
 
+| **Real map: satellite, 3D relief, every street** | **Any place: address, photos, 360°** |
+|---|---|
+| ![Real map](docs/screenshots/real-map.jpg) | ![Place panel](docs/screenshots/real-map-place.jpg) |
+
 ## What is inside
 
 | Area | Highlights |
 |---|---|
+| **Real map** (`/map`) | Every road, building and place from OpenStreetMap. Satellite hybrid mode with 3D relief, 3D buildings and a globe. Search for any street or place in Tajikistan, and "what is here" with the address at any click. Openly licensed photos and 360° panoramas around any point, with author and licence. Opens from any landmark, and every view is a shareable link. |
 | **Real terrain** | AWS Terrain Tiles (zoom 9), border from Natural Earth, lakes and rivers from OpenStreetMap. Baked hillshade, snow that depends on slope and aspect, 3D lake surfaces at their real level. Detail patches of about 90 m/px stream in around each landmark. One projection contract shared by Python and TypeScript and covered by tests on both sides. |
 | **Camera director** | Intro from space, descent, arcing fly-to, map ↔ stage behind an ornamental veil, return to the saved view, hotspot focus, a scroll-driven story spline. Only one move runs at a time. |
 | **Landmark stage** | Uploaded GLB (Draco, meshopt, KTX2; one LOD per quality tier) or a procedural placeholder. Auto-fit, studio lighting, contact shadows, hotspots, gallery, sources, a "Nearby" list. |
@@ -60,12 +65,31 @@ Useful URLs:
 - `/?debug` exposes renderer statistics in `window.__TJ3D__`.
 - `/place/<slug>?pick=1` prints the model coordinates of a click, ready to paste into the hotspot form in the admin.
 
+## Real map: satellite imagery and 360° panoramas
+
+The real map works with no keys at all. Two optional free keys in `.env` make it better:
+
+| Variable | What it adds | Where to get it |
+|---|---|---|
+| `ARCGIS_API_KEY` | High-resolution satellite imagery (Esri World Imagery, under 1 m in cities). Without it the satellite layer is Sentinel‑2 cloudless (about 10 m/px, CC BY-NC-SA 4.0), which is sharp for mountains and blurry for streets. | https://location.arcgis.com/: free tier, create an API key with the *basemaps* privilege |
+| `MAPILLARY_TOKEN` | Street-level photos and 360° street panoramas. Adds a "Street panoramas" layer: click a blue line to see the street. | https://www.mapillary.com/dashboard/developers: register an app and copy the *client token* |
+
+Restart the backend after editing `.env`. The browser reads both keys from `/api/v1/map-config/` at runtime, so the frontend does not need a rebuild.
+
+Where the data comes from:
+- Map: [OpenFreeMap](https://openfreemap.org) (OpenStreetMap, OpenMapTiles schema).
+- Search and addresses: [Photon](https://photon.komoot.io).
+- Relief: AWS Terrain Tiles.
+- Photos and panoramas: `/api/v1/nearby-media/`, which queries Wikimedia Commons, Panoramax and Mapillary on the server and caches the result for 6 hours.
+
+Images are shown with their author and licence and link to their source page. Open 360° coverage of Tajikistan is still small: Commons has almost no geotagged spheres there, and Panoramax has only single shots. Mapillary is the main source.
+
 ## Tests
 
 ```powershell
-cd backend;  .venv\Scripts\python manage.py test          # 52 tests: API, serializers, fallback, uploads, projection, cache
-cd frontend; npm run typecheck; npm test; npm run build   # Vitest: projection contract, mesh builder, search
-cd frontend; $env:PW_CHANNEL="msedge"; npm run e2e        # Playwright: 10 end-to-end flows (starts both servers)
+cd backend;  .venv\Scripts\python manage.py test          # 56 tests: API, serializers, fallback, uploads, projection, cache, nearby media
+cd frontend; npm run typecheck; npm test; npm run build   # Vitest: projection contract, mesh builder, search, real-map style
+cd frontend; $env:PW_CHANNEL="msedge"; npm run e2e        # Playwright: 12 end-to-end flows (starts both servers; the real-map ones need internet)
 ```
 
 To run the end-to-end suite against an already running deployment, set `$env:E2E_BASE_URL="http://localhost:8080"`. GitHub Actions runs all of it on every push (`.github/workflows/ci.yml`).
@@ -125,4 +149,5 @@ tools\.venv\Scripts\python tools\terrain\build_heightmap.py   # reads landmarks 
 - Borders, land, some lakes and rivers: [Natural Earth](https://www.naturalearthdata.com/) (public domain).
 - Lakes and rivers: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, ODbL.
 - Coordinates: [Wikidata](https://www.wikidata.org/) (CC0). Sarazm dating: [UNESCO World Heritage Centre](https://whc.unesco.org/en/list/1141/).
+- Real map: © OpenStreetMap contributors (ODbL) via OpenFreeMap / OpenMapTiles; geocoding by Photon (komoot); satellite: Sentinel‑2 cloudless by EOX (CC BY-NC-SA 4.0) or Esri World Imagery with a key; photos: Wikimedia Commons, Panoramax, Mapillary (each with its own author and licence).
 - Fonts: Cormorant Garamond and Inter (SIL Open Font License). Ambient sound is synthesised in the browser, with no audio files.

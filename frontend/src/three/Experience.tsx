@@ -144,7 +144,7 @@ function DebugStats() {
   return null
 }
 
-export default function Experience() {
+export default function Experience({ paused = false }: { paused?: boolean }) {
   const t = useT()
   const quality = useAppStore((s) => s.quality)
   const degrade = useAppStore((s) => s.degradeQuality)
@@ -159,6 +159,8 @@ export default function Experience() {
   return (
     <Canvas
       className="experience"
+      frameloop={paused ? 'never' : 'always'}
+      style={paused ? { visibility: 'hidden' } : undefined}
       dpr={preset.dpr}
       gl={{ antialias: quality !== 'low', powerPreference: 'high-performance', outputColorSpace: SRGBColorSpace, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
       camera={{ fov: 40, near: 0.1, far: 1500, position: [0, 60, 200] }}

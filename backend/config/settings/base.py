@@ -153,6 +153,10 @@ SPECTACULAR_SETTINGS = {
 # changes (apps/core/cache.py). Production uses a file cache shared by all
 # gunicorn workers in the container; override with CACHE_BACKEND/CACHE_LOCATION.
 API_CACHE_SECONDS = int(env("API_CACHE_SECONDS", "60"))
+# Optional Mapillary client token: enables street-level photos and 360° panoramas from Mapillary.
+MAPILLARY_TOKEN = env("MAPILLARY_TOKEN")
+# Optional ArcGIS key: high-resolution satellite imagery on the real map.
+ARCGIS_API_KEY = env("ARCGIS_API_KEY")
 CACHES = {
     "default": {
         "BACKEND": env("CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),

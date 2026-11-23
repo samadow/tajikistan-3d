@@ -108,3 +108,22 @@ Remaining items need the owner:
 | National park and Fann range outlines (R4) | Polygons to enter in the admin |
 | Docker image build (R5) | Needs Docker Desktop running on this machine |
 | Real 3D models | To produce and upload |
+
+## Phase 8: Real map ✅ (2026-11-23)
+
+Requested after Phase 7: "a real map of Tajikistan like Google or Yandex Maps, with every road and building, satellite mode, and 360° photos from the web".
+
+- [x] `/map` on MapLibre GL:
+  - OpenStreetMap vector tiles with every road, building and POI;
+  - globe, then 3D relief and 3D buildings;
+  - map, satellite hybrid and terrain base layers;
+  - labels in tg/ru/en.
+- [x] Search across the platform's landmarks and any OSM place in Tajikistan (Photon); "what is here" with the address at any click.
+- [x] Place panel: actions, coordinates, 360° panoramas and photos nearby with author and licence. Full-screen viewer with a three.js sphere for 360° images.
+- [x] Backend `nearby-media/` (Commons + Panoramax + Mapillary, cached) and `map-config/` (satellite source, Mapillary token from `.env`).
+- [x] Links in both directions between the 3D landmark stage and the real map; shareable views via the URL hash.
+- [x] Tests:
+  - backend: 4 new tests (56 in total);
+  - Vitest: 5 new (17 in total);
+  - Playwright: 2 new (12 in total, needs internet).
+- [ ] Owner: add `ARCGIS_API_KEY` for street-level satellite detail and `MAPILLARY_TOKEN` for street panoramas. Both are free tiers, see README.

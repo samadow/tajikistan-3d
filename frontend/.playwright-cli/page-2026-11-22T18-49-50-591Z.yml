@@ -1,0 +1,38 @@
+- generic [ref=f3e2]:
+  - link "Перейти к содержимому" [ref=f3e3] [cursor=pointer]:
+    - /url: "#content"
+  - banner:
+    - link "Таджикистан" [ref=f3e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e10]:
+        - text: Таджикистан
+        - superscript [ref=f3e11]: 3D
+    - navigation "Main" [ref=f3e12]:
+      - link "Карта" [ref=f3e13] [cursor=pointer]:
+        - /url: /
+      - link "Реальная карта" [ref=f3e14] [cursor=pointer]:
+        - /url: /map
+      - link "Места" [ref=f3e15] [cursor=pointer]:
+        - /url: /discover
+      - link "История" [ref=f3e16] [cursor=pointer]:
+        - /url: /history
+      - link "Маршруты" [ref=f3e17] [cursor=pointer]:
+        - /url: /stories
+      - link "О Таджикистане" [ref=f3e18] [cursor=pointer]:
+        - /url: /about
+    - generic [ref=f3e19]:
+      - button "Поиск (Ctrl+K)" [ref=f3e20]
+      - button "Ночь" [ref=f3e24]
+      - button "Настройки" [ref=f3e29]
+      - group "Язык" [ref=f3e36]:
+        - button "Тоҷикӣ" [ref=f3e37]: ТҶ
+        - button "Русский" [pressed] [ref=f3e38]: РУ
+        - button "English" [ref=f3e39]: EN
+      - button "Меню" [ref=f3e40]
+  - status "…" [ref=f3e43]
+  - progressbar "Загружаем горы" [ref=f3e44]:
+    - generic [ref=f3e46]:
+      - generic [ref=f3e67]:
+        - paragraph [ref=f3e68]: Таджикистан
+        - paragraph [ref=f3e69]: Загружаем горы…
+      - generic [ref=f3e70]: "3"

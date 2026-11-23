@@ -23,6 +23,7 @@ const Discover = lazy(() => import('./ui/pages/Discover'))
 const History = lazy(() => import('./ui/pages/History'))
 const Stories = lazy(() => import('./ui/pages/Stories'))
 const About = lazy(() => import('./ui/pages/About'))
+const RealMap = lazy(() => import('./realmap/RealMap'))
 
 /** Ambient sound follows the toggle and the scene phase. */
 function SoundController() {
@@ -52,6 +53,7 @@ function Pages() {
         <Route path="/history" element={<History />} />
         <Route path="/stories" element={<Stories />} />
         <Route path="/about" element={<About />} />
+        <Route path="/map" element={<RealMap />} />
         <Route path="*" element={null} />
       </Routes>
     </Suspense>
@@ -72,6 +74,13 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false)
   const isStory = location.pathname.startsWith('/story')
   const isPage = ['/discover', '/history', '/stories', '/about'].includes(location.pathname)
+  const isRealMap = location.pathname === '/map'
+  // The 3D scene is not needed on the real map: a direct visit never downloads it,
+  // and once it exists it is paused (kept in memory so going back is instant).
+  const [sceneWanted, setSceneWanted] = useState(!isRealMap)
+  useEffect(() => {
+    if (!isRealMap) setSceneWanted(true)
+  }, [isRealMap])
 
   useEffect(() => {
     document.documentElement.lang = useAppStore.getState().lang
@@ -82,8 +91,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (!isPage && !place) document.title = `${t('brand')} 3D`
-  }, [isPage, place, t])
+    if (!isPage && !place && !isRealMap) document.title = `${t('brand')} 3D`
+  }, [isPage, place, isRealMap, t])
 
   // Ctrl+K or "/" opens search.
   useEffect(() => {
@@ -99,7 +108,7 @@ export default function App() {
   }, [])
 
   // Content pages do not need the relief, so they are not held behind the loader.
-  const done = (webgl && !isPage ? terrainReady : true) && (!!landmarks || isError)
+  const done = (webgl && !isPage && !isRealMap ? terrainReady : true) && (!!landmarks || isError)
   // Terrain decoding has no granular progress: count it as the first 70 %.
   const progress = (terrainReady ? 70 : 35) + (loadProgress / 100) * 30
 
@@ -109,9 +118,9 @@ export default function App() {
         {t('skipToContent')}
       </a>
 
-      {webgl && (
+      {webgl && sceneWanted && (
         <Suspense fallback={null}>
-          <ThreeRoot />
+          <ThreeRoot paused={isRealMap} />
         </Suspense>
       )}
       <Header webgl={webgl} onSearch={() => setSearchOpen(true)} />
@@ -119,7 +128,7 @@ export default function App() {
       {webgl ? (
         <>
           {location.pathname === '/' && <MapOverlay />}
-          <GlobeCaption />
+          {!isRealMap && <GlobeCaption />}
           {isStory && (
             <Suspense fallback={null}>
               <StoryMode />
@@ -127,7 +136,7 @@ export default function App() {
           )}
         </>
       ) : (
-        !place && !isPage && <Map2D />
+        !place && !isPage && !isRealMap && <Map2D />
       )}
       <Pages />
       {place?.params.slug && <DetailView slug={place.params.slug} webgl={webgl} />}

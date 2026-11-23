@@ -88,3 +88,17 @@ export function usePage(slug: string) {
   const lang = useAppStore((s) => s.lang)
   return useQuery({ queryKey: ['page', slug, lang], queryFn: ({ signal }) => api.page(slug, lang, signal), placeholderData: keepPreviousData, staleTime: STALE })
 }
+
+export function useMapConfig() {
+  return useQuery({ queryKey: ['map-config'], queryFn: ({ signal }) => api.mapConfig(signal), staleTime: Infinity })
+}
+
+/** Photos and panoramas around a point; the point is rounded so small moves reuse the cache. */
+export function useNearbyMedia(point: { lat: number; lon: number; radius: number } | null) {
+  return useQuery({
+    queryKey: ['nearby-media', point?.lat.toFixed(4), point?.lon.toFixed(4), point?.radius],
+    queryFn: ({ signal }) => api.nearbyMedia(point!.lat, point!.lon, point!.radius, signal),
+    enabled: !!point,
+    staleTime: 30 * 60_000,
+  })
+}

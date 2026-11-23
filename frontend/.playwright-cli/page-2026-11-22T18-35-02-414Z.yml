@@ -1,0 +1,38 @@
+- generic [ref=e2]:
+  - link "Ба мундариҷа гузаштан" [ref=e3] [cursor=pointer]:
+    - /url: "#content"
+  - banner:
+    - link "Тоҷикистон" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e10]:
+        - text: Тоҷикистон
+        - superscript [ref=e11]: 3D
+    - navigation "Main" [ref=e12]:
+      - link "Харита" [ref=e13] [cursor=pointer]:
+        - /url: /
+      - link "Харитаи воқеӣ" [ref=e14] [cursor=pointer]:
+        - /url: /map
+      - link "Кашфиёт" [ref=e15] [cursor=pointer]:
+        - /url: /discover
+      - link "Таърих" [ref=e16] [cursor=pointer]:
+        - /url: /history
+      - link "Ҳикояҳо" [ref=e17] [cursor=pointer]:
+        - /url: /stories
+      - link "Дар бораи Тоҷикистон" [ref=e18] [cursor=pointer]:
+        - /url: /about
+    - generic [ref=e19]:
+      - button "Ҷустуҷӯ (Ctrl+K)" [ref=e20]
+      - button "Шаб" [ref=e24]
+      - button "Танзимот" [ref=e29]
+      - group "Забон" [ref=e36]:
+        - button "Тоҷикӣ" [pressed] [ref=e37]: ТҶ
+        - button "Русский" [ref=e38]: РУ
+        - button "English" [ref=e39]: EN
+      - button "Меню" [ref=e40]
+  - status "…" [ref=e43]
+  - progressbar "Кӯҳҳо бор мешаванд" [ref=e44]:
+    - generic [ref=e46]:
+      - generic [ref=e67]:
+        - paragraph [ref=e68]: Тоҷикистон
+        - paragraph [ref=e69]: Кӯҳҳо бор мешаванд…
+      - generic [ref=e70]: "3"

@@ -1,0 +1,195 @@
+- generic [ref=f2e2]:
+  - link "Ба мундариҷа гузаштан" [ref=f2e3] [cursor=pointer]:
+    - /url: "#content"
+  - banner:
+    - link "Тоҷикистон" [ref=f2e4] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f2e10]:
+        - text: Тоҷикистон
+        - superscript [ref=f2e11]: 3D
+    - navigation "Main" [ref=f2e12]:
+      - link "Харита" [ref=f2e13] [cursor=pointer]:
+        - /url: /
+      - link "Харитаи воқеӣ" [ref=f2e14] [cursor=pointer]:
+        - /url: /map
+      - link "Кашфиёт" [ref=f2e15] [cursor=pointer]:
+        - /url: /discover
+      - link "Таърих" [ref=f2e16] [cursor=pointer]:
+        - /url: /history
+      - link "Ҳикояҳо" [ref=f2e17] [cursor=pointer]:
+        - /url: /stories
+      - link "Дар бораи Тоҷикистон" [ref=f2e18] [cursor=pointer]:
+        - /url: /about
+    - generic [ref=f2e19]:
+      - button "Ҷустуҷӯ (Ctrl+K)" [ref=f2e20]
+      - button "Шаб" [ref=f2e24]
+      - button "Танзимот" [ref=f2e29]
+      - group "Забон" [ref=f2e36]:
+        - button "Тоҷикӣ" [pressed] [ref=f2e37]: ТҶ
+        - button "Русский" [ref=f2e38]: РУ
+        - button "English" [ref=f2e39]: EN
+      - button "Меню" [ref=f2e40]
+  - generic [ref=f2e73]:
+    - generic [ref=f2e74]:
+      - generic:
+        - region "Map" [active] [ref=f2e75] [cursor=pointer]
+        - button "Map marker" [ref=f2e76]
+      - generic:
+        - generic: 30 m
+        - generic:
+          - button "Enter fullscreen" [ref=f2e97] [cursor=pointer]
+          - button "Find my location" [ref=f2e100] [cursor=pointer]
+          - generic [ref=f2e102]:
+            - button "Zoom in" [ref=f2e103] [cursor=pointer]
+            - button "Zoom out" [ref=f2e105] [cursor=pointer]
+            - button "Drag to rotate map, click to reset north" [ref=f2e107]
+          - group [ref=f2e109]:
+            - generic "Toggle attribution" [ref=f2e110] [cursor=pointer]
+            - generic [ref=f2e111]:
+              - link "AWS Terrain Tiles" [ref=f2e112] [cursor=pointer]:
+                - /url: https://registry.opendata.aws/terrain-tiles/
+              - text: "|"
+              - link "Sentinel-2 cloudless – s2maps.eu by EOX IT Services GmbH" [ref=f2e113] [cursor=pointer]:
+                - /url: https://s2maps.eu
+              - text: (Contains modified Copernicus Sentinel data 2020) |
+              - link "OpenFreeMap" [ref=f2e114] [cursor=pointer]:
+                - /url: https://openfreemap.org
+              - link "© OpenMapTiles" [ref=f2e115] [cursor=pointer]:
+                - /url: https://www.openmaptiles.org/
+              - text: Data from
+              - link "OpenStreetMap" [ref=f2e116] [cursor=pointer]:
+                - /url: https://www.openstreetmap.org/copyright
+    - combobox "Шаҳр, кӯча ё ҷойро ҷустуҷӯ кунед" [ref=f2e122]
+    - button "Қабатҳо" [ref=f2e124]
+    - paragraph: Аксҳои Sentinel‑2 (~10 м). Барои тасвирҳои муфассал ARCGIS_API_KEY-ро гузоред.
+    - complementary "Душанбе" [ref=f2e126]:
+      - generic [ref=f2e127]:
+        - generic [ref=f2e128]:
+          - heading "Душанбе" [level=2] [ref=f2e129]
+          - paragraph [ref=f2e130]: "Пойтахт: ёдгории Исмоили Сомонӣ ва Кохи Наврӯз"
+          - paragraph [ref=f2e131]: 38,574° а.ш., 68,785° т.ш.
+        - button "Пӯшидан" [ref=f2e132]
+      - generic [ref=f2e135]:
+        - link "Дар 3D кушодан" [ref=f2e136] [cursor=pointer]:
+          - /url: /place/dushanbe
+        - button "Наздиктар" [ref=f2e137]
+        - button "Нусхаи координатаҳо" [ref=f2e138]
+      - generic [ref=f2e139]:
+        - heading "Панорамаҳои 360°" [level=3] [ref=f2e140]
+        - paragraph [ref=f2e141]:
+          - text: Дар ин ҷо ҳоло панорамаи 360° нест.
+          - generic [ref=f2e142]: "Панорамаҳои кӯча аз Mapillary: калиди ройгонро ба .env илова кунед (MAPILLARY_TOKEN)."
+        - heading "Аксҳои наздик· 50" [level=3] [ref=f2e143]:
+          - text: Аксҳои наздик
+          - generic [ref=f2e144]: · 50
+        - generic [ref=f2e145]:
+          - button [ref=f2e146]:
+            - img "Dushanbe government building - panoramio" [ref=f2e147]
+          - button [ref=f2e148]:
+            - img "National Library, Dushanbe, Tajikistan" [ref=f2e149]
+          - button [ref=f2e150]:
+            - img "National Library of Tajikistan, Dushanbe (4)" [ref=f2e151]
+          - button [ref=f2e152]:
+            - img "National Library of Tajikistan, Dushanbe (5)" [ref=f2e153]
+          - button [ref=f2e154]:
+            - img "National Library of Tajikistan, Dushanbe (3)" [ref=f2e155]
+          - button [ref=f2e156]:
+            - img "National Library of Tajikistan, Dushanbe (7)" [ref=f2e157]
+          - button [ref=f2e158]:
+            - img "National Library of Tajikistan" [ref=f2e159]
+          - button [ref=f2e160]:
+            - img "National Library of Tajikistan, Dushanbe (8)" [ref=f2e161]
+          - button [ref=f2e162]:
+            - img "National Library of Tajikistan, Dushanbe (6)" [ref=f2e163]
+          - button [ref=f2e164]:
+            - img "Амонова Дильбар Субхоновна" [ref=f2e165]
+          - button [ref=f2e166]:
+            - img "National Library of Tajikistan, Dushanbe (1)" [ref=f2e167]
+          - button [ref=f2e168]:
+            - img "National Library of Tajikistan (7)" [ref=f2e169]
+          - button [ref=f2e170]:
+            - img "Avenues in Dushanbe (21)" [ref=f2e171]
+          - button [ref=f2e172]:
+            - img "Dushanbe, Tajikistan - panoramio (110)" [ref=f2e173]
+          - button [ref=f2e174]:
+            - img "Dushanbe, Tajikistan - panoramio (120)" [ref=f2e175]
+          - button [ref=f2e176]:
+            - img "Dushanbe, Tajikistan - panoramio (121)" [ref=f2e177]
+          - button [ref=f2e178]:
+            - img "National Library of Tajikistan, Dushanbe (2)" [ref=f2e179]
+          - button [ref=f2e180]:
+            - img "Modern Center of Dushanbe, Tajikistan (42901495515)" [ref=f2e181]
+          - button [ref=f2e182]:
+            - img "Modern Center of Dushanbe, Tajikistan (28868849827)" [ref=f2e183]
+          - button [ref=f2e184]:
+            - img "Modern Center of Dushanbe, Tajikistan (42901497375)" [ref=f2e185]
+          - button [ref=f2e186]:
+            - img "National Library of Tajikistan, entrance" [ref=f2e187]
+          - button [ref=f2e188]:
+            - img "Nowruz in Dushanbe 04" [ref=f2e189]
+          - button [ref=f2e190]:
+            - img "Nowruz in Dushanbe 05" [ref=f2e191]
+          - button [ref=f2e192]:
+            - img "Nowruz in Dushanbe 07" [ref=f2e193]
+          - button [ref=f2e194]:
+            - img "Nowruz in Dushanbe 06" [ref=f2e195]
+          - button [ref=f2e196]:
+            - img "Nowruz in Dushanbe 08" [ref=f2e197]
+          - button [ref=f2e198]:
+            - img "Nowruz in Dushanbe 09" [ref=f2e199]
+          - button [ref=f2e200]:
+            - img "Nowruz in Dushanbe 11" [ref=f2e201]
+          - button [ref=f2e202]:
+            - img "Nowruz in Dushanbe 12" [ref=f2e203]
+          - button [ref=f2e204]:
+            - img "Nowruz in Dushanbe 14" [ref=f2e205]
+          - button [ref=f2e206]:
+            - img "Nowruz in Dushanbe 15" [ref=f2e207]
+          - button [ref=f2e208]:
+            - img "Nowruz in Dushanbe 17" [ref=f2e209]
+          - button [ref=f2e210]:
+            - img "Nowruz in Dushanbe 16" [ref=f2e211]
+          - button [ref=f2e212]:
+            - img "Весна в Душанбе, 2022 20" [ref=f2e213]
+          - button [ref=f2e214]:
+            - img "Аксакал" [ref=f2e215]
+          - button [ref=f2e216]:
+            - img "Trainer Training Program for the Tajik Wikimedians User Group by Darafsh 35" [ref=f2e217]
+          - button [ref=f2e218]:
+            - img "Trainer Training Program for the Tajik Wikimedians User Group by Darafsh 36" [ref=f2e219]
+          - button [ref=f2e220]:
+            - img "Trainer Training Program for the Tajik Wikimedians User Group by Darafsh 45" [ref=f2e221]
+          - button [ref=f2e222]:
+            - img "Trainer Training Program for the Tajik Wikimedians User Group by Darafsh 66" [ref=f2e223]
+          - button [ref=f2e224]:
+            - img "Park in Dushanbe city (20)" [ref=f2e225]
+          - button [ref=f2e226]:
+            - img "Park in Dushanbe city (21)" [ref=f2e227]
+          - button [ref=f2e228]:
+            - img "Park in Dushanbe city (22)" [ref=f2e229]
+          - button [ref=f2e230]:
+            - img "Park in Dushanbe city (23)" [ref=f2e231]
+          - button [ref=f2e232]:
+            - img "Park in Dushanbe city (24)" [ref=f2e233]
+          - button [ref=f2e234]:
+            - img "Park in Dushanbe city (25)" [ref=f2e235]
+          - button [ref=f2e236]:
+            - img "Park in Dushanbe city (27)" [ref=f2e237]
+          - button [ref=f2e238]:
+            - img "Park in Dushanbe city (28)" [ref=f2e239]
+          - button [ref=f2e240]:
+            - img "Park in Dushanbe city (26)" [ref=f2e241]
+          - button [ref=f2e242]:
+            - img "Park in Dushanbe city (29)" [ref=f2e243]
+          - button [ref=f2e244]:
+            - img "Park in Dushanbe city (30)" [ref=f2e245]
+        - paragraph [ref=f2e246]:
+          - generic [ref=f2e247]: "Dushanbe government building - panoramio:"
+          - generic [ref=f2e248]:
+            - text: © Maris Teteris ·
+            - link "CC BY 3.0" [ref=f2e249] [cursor=pointer]:
+              - /url: https://creativecommons.org/licenses/by/3.0
+            - text: ·
+            - 'link "Манбаъ: Wikimedia Commons" [ref=f2e250] [cursor=pointer]':
+              - /url: https://commons.wikimedia.org/wiki/File:Dushanbe_government_building_-_panoramio.jpg
+        - paragraph [ref=f2e251]: 38.574000, 68.785400

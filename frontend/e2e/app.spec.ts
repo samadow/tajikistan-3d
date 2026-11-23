@@ -93,3 +93,32 @@ test.describe('pages and fallback', () => {
     await expect(page).toHaveURL(/\/place\/ismoil-somoni-peak/)
   })
 })
+
+// Uses live open services (OpenFreeMap tiles, Photon, Wikimedia Commons) — needs internet.
+test.describe('Real map', () => {
+  test('loads the OSM map, finds a landmark and shows nearby photos', async ({ page }) => {
+    await page.goto('/map?lang=en#6/38.7/71.1/0/0')
+    await page.waitForFunction(() => document.querySelector<HTMLElement>('[data-testid=real-map]')?.dataset.ready === '1', null, { timeout: 120_000 })
+    await expect(page.locator('.maplibregl-canvas')).toBeVisible()
+
+    const box = page.getByRole('combobox', { name: /Search a city/ })
+    await box.fill('Hisor')
+    await page.getByRole('option', { name: /Hisor Fortress/ }).dispatchEvent('mousedown')
+    const panel = page.getByRole('complementary', { name: 'Hisor Fortress' })
+    await expect(panel).toBeVisible()
+    await expect(panel.getByRole('link', { name: 'Open in 3D' })).toHaveAttribute('href', '/place/hisor-fortress')
+    // Openly licensed photos around the point, with their source.
+    await expect(panel.getByRole('heading', { name: /Photos nearby/ })).toBeVisible()
+    await expect(panel.locator('.grid button img').first()).toBeVisible({ timeout: 90_000 })
+    await expect(page).toHaveURL(/#1[0-9](\.\d+)?\/38\.\d+\/68\.\d+/, { timeout: 30_000 })
+  })
+
+  test('landmark page links to the real map', async ({ page }) => {
+    await page.goto('/place/hisor-fortress?quality=low&lang=en')
+    const link = page.getByRole('link', { name: /On the real map/ })
+    await expect(link).toBeVisible({ timeout: 150_000 })
+    await link.click()
+    await expect(page).toHaveURL(/\/map#/)
+    await page.waitForFunction(() => document.querySelector<HTMLElement>('[data-testid=real-map]')?.dataset.ready === '1', null, { timeout: 120_000 })
+  })
+})

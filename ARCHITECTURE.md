@@ -94,6 +94,8 @@ backend/
 | `GET /api/v1/landmarks/{slug}/stories/` | Stories containing this landmark | Story summaries |
 | `GET /api/v1/stories/`, `/stories/{slug}/` | Story mode | Steps |
 | `GET /api/v1/categories/` | Filters | Name and count |
+| `GET /api/v1/map-config/` | Real map runtime settings | Satellite tile source (EOX by default, Esri with `ARCGIS_API_KEY`), Mapillary client token |
+| `GET /api/v1/nearby-media/?lat=&lon=&radius=` | Photos and 360° panoramas around a point | Merged from Wikimedia Commons, Panoramax and Mapillary (if a token is set), queried in parallel on the server, each item with author, licence and source link. Cached for 6 h; a failed source is skipped and reported in `sources_failed`. |
 | `GET /api/v1/schema/`, `/api/v1/docs/` | OpenAPI | |
 
 Every response keeps `Content-Language`, `Vary: Accept-Language` and `Cache-Control`. The server side caches through the Django cache, with keys that include the language and a **content version** that is bumped by a `post_save` / `post_delete` signal, so admin edits show up immediately.
@@ -183,3 +185,15 @@ stateDiagram-v2
 ### ADR-7: No PostGIS
 - "Nearby" computes the haversine distance in Python over the published landmarks (hundreds of rows at most). This is database-agnostic, so it works the same on SQLite in development and PostgreSQL in production. Area polygons are stored as GeoJSON for display only. PostGIS would add an operational dependency for no real gain at this size.
 - **Revisit if** the number of landmarks grows into the thousands.
+
+### ADR-8: The real map is a separate renderer (MapLibre GL), not part of the three.js scene
+- **Context.** Users want a real map (every street and building, satellite imagery, search, street photos), like Google or Yandex Maps. The three.js relief scene is a stylised, single-heightmap experience and cannot stream a street-level world.
+- **Decision.**
+  - `/map` uses MapLibre GL JS (open source, vector tiles, globe projection, 3D terrain and extrusions), with:
+    - OpenFreeMap's OpenStreetMap tiles;
+    - AWS Terrain Tiles for relief;
+    - a satellite raster for the hybrid mode.
+  - It is its own lazy chunk. The three.js scene is paused (`frameloop="never"`, hidden) rather than unmounted while `/map` is open, so going back is instant. A direct visit to `/map` never loads it.
+  - The two worlds link through coordinates. A landmark page opens `/map#zoom/lat/lon/bearing/pitch`, and the map's landmark panel opens `/place/<slug>`.
+- **Third-party data goes through the backend where it can.** Photo and panorama lookups are server-side, which keeps the token off the client, allows caching, and gives one schema. Vector tiles, search and satellite tiles are fetched by the browser directly, because proxying them would only add latency and cost.
+- **Licensing.** Only openly licensed imagery is shown, always with its author, licence and source. High-resolution satellite imagery needs an ArcGIS key, because Esri's terms require an account.
